@@ -72,6 +72,10 @@
       "reducedMotion": {
         "Name": "Respetar «reducir movimiento»",
         "Hint": "Omitir la animación de los dados cuando el sistema operativo pide reducir el movimiento."
+      },
+      "showButton": {
+        "Name": "Mostrar el botón de estilos de dados",
+        "Hint": "Añade un botón de dado a los controles de fichas y del chat que abre el menú de estilos de dados."
       }
     },
     "Quality": {
@@ -101,7 +105,23 @@
       "Concrete": "Hormigón",
       "Constellation": "Constelación",
       "Walnut": "Nogal",
-      "OilSlick": "Mancha de aceite"
+      "OilSlick": "Mancha de aceite",
+      "ClassicPink": "Clásico rosa",
+      "ClassicSky": "Clásico celeste",
+      "ClassicOrange": "Clásico naranja",
+      "ClassicBrown": "Clásico marrón",
+      "ClassicGreen": "Clásico verde",
+      "ClassicBlue": "Clásico azul",
+      "ClassicRed": "Clásico rojo",
+      "ClassicPurple": "Clásico morado"
+    },
+    "Collection": {
+      "sargas": "Colección Sargas",
+      "classic": "Acrílico clásico (pequeños)",
+      "other": "Otros"
+    },
+    "Controls": {
+      "Button": "Estilos de dados"
     }
   }
 }

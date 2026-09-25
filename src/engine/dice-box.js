@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { getPolyhedron, readTop } from "./polyhedra.js";
-import { getDieGeometry } from "./geometry.js";
+import { getStyleGeometry } from "./geometry.js";
 import { getDieMaterial } from "./materials.js";
 import { createInclusion } from "./inclusions.js";
 import { simulateThrowAsync, remapToResults, trayForAspect } from "./physics.js";
@@ -140,7 +140,7 @@ export class DiceBox {
     }
     this.ensure();
     const s = this.settings();
-    const simDice = dice.map(d => ({ kind: d.kind, physics: d.style.physics }));
+    const simDice = dice.map(d => ({ kind: d.kind, physics: d.style.physics, size: d.style.size ?? 1 }));
     const sim = await simulateThrowAsync({ dice: simDice, seed, scale: s.scale, tray: this.tray });
     if (!this.renderer) this.ensure(); // context was lost while simulating
     const remaps = remapToResults(simDice, sim.tops, dice.map(d => d.value ?? null), seed);
@@ -151,14 +151,14 @@ export class DiceBox {
     const group = new THREE.Group();
     const meshes = dice.map((d, i) => {
       const poly = getPolyhedron(d.kind);
-      const mesh = new THREE.Mesh(getDieGeometry(poly), getDieMaterial(d.style, d.kind, { quality: this.quality, variant: d.variant, anisotropy: this.renderer.capabilities.getMaxAnisotropy() }));
+      const mesh = new THREE.Mesh(getStyleGeometry(poly, d.style), getDieMaterial(d.style, d.kind, { quality: this.quality, variant: d.variant, anisotropy: this.renderer.capabilities.getMaxAnisotropy() }));
       mesh.castShadow = true;
       const inclusion = createInclusion(d.style.inclusion, poly);
       if (inclusion) mesh.add(inclusion);
       mesh.userData.remap = new THREE.Quaternion(...remaps[i]);
       mesh.userData.kind = d.kind;
-      mesh.userData.baseScale = s.scale;
-      mesh.scale.setScalar(s.scale);
+      mesh.userData.baseScale = s.scale * (d.style.size ?? 1);
+      mesh.scale.setScalar(mesh.userData.baseScale);
       group.add(mesh);
       return mesh;
     });

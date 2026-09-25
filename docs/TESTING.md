@@ -28,7 +28,9 @@ Manual checks before tagging a release, in a v14 world with the dnd5e system and
 - [ ] Inline and sheet rolls in dnd5e animate: attack roll, damage roll, advantage (2d20kh), a critical.
 - [ ] Two clients see the same throw, and each user's dice use that user's chosen style.
 - [ ] Chat card is held until the dice stop, and shows immediately with "Hold chat" turned off.
-- [ ] Style menu: thumbnails render, **Preview** throws dice, a player can only pick enabled styles.
+- [ ] Style menu: thumbnails render grouped into Sargas and Classic, **Preview** throws dice, a player can only pick enabled styles.
+- [ ] The dice button appears in the token controls and next to the chat controls, opens the style menu, and disappears when "Show dice style button" is off (after reload).
+- [ ] Classic sets roll as small rounded d6s; other dice kinds (d20 etc.) use the set's colour with white numbers.
 - [ ] GM turns off a player's style → that player's next roll uses the first enabled style on every client, and the player gets a notification.
 - [ ] GM turns off every style → no 3D dice, and chat cards are not held.
 - [ ] 20 dice in one roll (`/r 20d6`) on the Low quality setting: no errors, smooth playback, and the page stays responsive while the throw is simulated.

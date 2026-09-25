@@ -16,12 +16,22 @@
   gap: 0.5rem;
 }
 
+.sargas-dice-config .sargas-style-scroll {
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1;
+  padding: 0.25rem;
+}
+
+.sargas-dice-config .sargas-collection {
+  margin: 0.5rem 0 0.25rem;
+  border-bottom: 1px solid var(--color-border, #7a7971);
+}
+
 .sargas-dice-config .sargas-style-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 0.75rem;
-  overflow-y: auto;
-  padding: 0.25rem;
 }
 
 .sargas-dice-config .sargas-style-card {
@@ -50,4 +60,9 @@
 .sargas-dice-config .sargas-preview {
   font-size: var(--font-size-11, 11px);
   line-height: 1.6;
+}
+
+/* Dice style button in the chat controls. */
+.sargas-dice-button {
+  cursor: pointer;
 }

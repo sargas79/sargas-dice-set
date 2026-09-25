@@ -45,3 +45,34 @@ describe("polyhedra", () => {
     });
   }
 });
+
+describe("rounded d6 geometry", async () => {
+  const { getRoundedCubeGeometry, ROUNDED_RADIUS } = await import("../src/engine/geometry.js");
+  const poly = getPolyhedron(6);
+  const geo = getRoundedCubeGeometry(poly);
+  const pos = geo.getAttribute("position"), nor = geo.getAttribute("normal");
+  const half = v3.len(poly.faces[0].center);
+
+  it("stays inside the cube and keeps flat face centres", () => {
+    let maxAbs = 0;
+    for (let i = 0; i < pos.count; i++) maxAbs = Math.max(maxAbs, Math.abs(pos.getX(i)), Math.abs(pos.getY(i)), Math.abs(pos.getZ(i)));
+    expect(maxAbs).toBeCloseTo(half, 5);
+  });
+
+  it("rounds the corners with the rounding radius", () => {
+    const inner = half * (1 - ROUNDED_RADIUS);
+    const corner = Math.sqrt(3) * inner + half * ROUNDED_RADIUS;
+    let maxR = 0;
+    for (let i = 0; i < pos.count; i++) maxR = Math.max(maxR, Math.hypot(pos.getX(i), pos.getY(i), pos.getZ(i)));
+    expect(maxR).toBeCloseTo(corner, 3);
+    expect(maxR).toBeLessThan(poly.radius);
+  });
+
+  it("has unit normals pointing outward", () => {
+    for (let i = 0; i < pos.count; i += 7) {
+      const n = [nor.getX(i), nor.getY(i), nor.getZ(i)];
+      expect(v3.len(n)).toBeCloseTo(1, 5);
+      expect(v3.dot(n, [pos.getX(i), pos.getY(i), pos.getZ(i)])).toBeGreaterThan(0);
+    }
+  });
+});

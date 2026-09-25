@@ -17,7 +17,8 @@ export const SETTINGS = {
   hiddenRolls: "hiddenRolls",
   inlineRolls: "inlineRolls",
   fitScreen: "fitScreen",
-  reducedMotion: "reducedMotion"
+  reducedMotion: "reducedMotion",
+  showButton: "showButton"
 };
 
 export const get = key => game.settings.get(MODULE_ID, key);
@@ -61,6 +62,7 @@ export function registerSettings() {
   reg(SETTINGS.showOthers, { scope: "client", config: true, type: Boolean, default: true });
   reg(SETTINGS.fitScreen, { scope: "client", config: true, type: Boolean, default: true, onChange: () => globalThis.dispatchEvent?.(new Event("resize")) });
   reg(SETTINGS.reducedMotion, { scope: "client", config: true, type: Boolean, default: true });
+  reg(SETTINGS.showButton, { scope: "client", config: true, type: Boolean, default: true, requiresReload: true });
   reg(SETTINGS.holdChat, { scope: "world", config: true, type: Boolean, default: true });
   reg(SETTINGS.diceScale, { scope: "world", config: true, type: Number, default: 1, range: { min: 0.6, max: 1.6, step: 0.1 } });
   reg(SETTINGS.maxDice, { scope: "world", config: true, type: Number, default: 20, range: { min: 1, max: 30, step: 1 } });
