@@ -34,7 +34,7 @@ function hullShape(kind, scale) {
  * runs this with the same inputs gets the same animation.
  *
  * @param {object} opts
- * @param {{kind:number, physics?:object}[]} opts.dice  One entry per physical die (d100 is two d10s).
+ * @param {{kind:number, physics?:object, size?:number}[]} opts.dice  One entry per physical die (d100 is two d10s); size scales that die.
  * @param {number|string} opts.seed
  * @param {number} [opts.scale=1]  Dice size multiplier.
  * @param {{width:number, depth:number}} [opts.tray]  Tray size in world units (default: fixed 16:9 tray).
@@ -118,7 +118,7 @@ function* runOnce(dice, rng, scale, tray) {
       sleepSpeedLimit: 0.25,
       sleepTimeLimit: 0.25
     });
-    body.addShape(hullShape(die.kind, scale));
+    body.addShape(hullShape(die.kind, scale * (die.size ?? 1)));
 
     // Start in a grid along the throwing edge (rows inward, then stacked layers) so big rolls stay inside the tray.
     const gap = 1.8 * scale;

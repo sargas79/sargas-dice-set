@@ -72,6 +72,10 @@
       "reducedMotion": {
         "Name": "Respeitar \"reduzir movimento\"",
         "Hint": "Pular a animação dos dados quando o sistema operacional pede para reduzir movimento."
+      },
+      "showButton": {
+        "Name": "Mostrar botão de estilos de dados",
+        "Hint": "Adiciona um botão de dado aos controles de tokens e do chat que abre o menu de estilos de dados."
       }
     },
     "Quality": {
@@ -101,7 +105,23 @@
       "Concrete": "Concreto",
       "Constellation": "Constelação",
       "Walnut": "Nogueira",
-      "OilSlick": "Mancha de óleo"
+      "OilSlick": "Mancha de óleo",
+      "ClassicPink": "Clássico rosa",
+      "ClassicSky": "Clássico azul-céu",
+      "ClassicOrange": "Clássico laranja",
+      "ClassicBrown": "Clássico marrom",
+      "ClassicGreen": "Clássico verde",
+      "ClassicBlue": "Clássico azul",
+      "ClassicRed": "Clássico vermelho",
+      "ClassicPurple": "Clássico roxo"
+    },
+    "Collection": {
+      "sargas": "Coleção Sargas",
+      "classic": "Acrílico clássico (pequenos)",
+      "other": "Outros"
+    },
+    "Controls": {
+      "Button": "Estilos de dados"
     }
   }
 }

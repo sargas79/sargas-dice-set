@@ -97,3 +97,64 @@ export function getDieGeometry(poly) {
   geometryCache.set(poly.kind, geometry);
   return geometry;
 }
+
+/** Corner/edge rounding radius of "rounded" d6s, relative to half the cube's side. */
+export const ROUNDED_RADIUS = 0.42;
+const ROUNDED_GRID = 32;
+
+/**
+ * Casino-style d6: a cube with smoothly rounded edges and corners (a rounded
+ * box: every surface point is the nearest point of a smaller inner box pushed
+ * out by the rounding radius). Each face is a grid that keeps its own atlas
+ * cell, so pips and textures line up with the chamfered d6.
+ */
+export function getRoundedCubeGeometry(poly) {
+  const key = `rounded:${poly.kind}`;
+  if (geometryCache.has(key)) return geometryCache.get(key);
+  if (poly.kind !== 6) throw new Error("Rounded geometry is only defined for d6");
+  const layout = getLayout(poly);
+  const half = v3.len(poly.faces[0].center);
+  const r = half * ROUNDED_RADIUS;
+  const inner = half - r;
+  const clamp = v => Math.max(-inner, Math.min(inner, v));
+  const N = ROUNDED_GRID;
+  const pos = [], nor = [], uv = [], index = [];
+
+  poly.faces.forEach((f, fi) => {
+    const cell = layout.faces[fi].cell;
+    const base = pos.length / 3;
+    for (let j = 0; j <= N; j++) {
+      for (let i = 0; i <= N; i++) {
+        const x = -half + (2 * half * i) / N, y = -half + (2 * half * j) / N;
+        const p = v3.add(v3.add(f.center, v3.scale(f.right, x)), v3.scale(f.up, y));
+        const q = p.map(clamp);
+        const n = v3.norm(v3.sub(p, q));
+        pos.push(...v3.add(q, v3.scale(n, r)));
+        nor.push(...n);
+        const [s, t] = layout.toAtlas(cell, x, y);
+        uv.push(s, 1 - t);
+      }
+    }
+    // (x along right, y along up) winds counter-clockwise around the outward normal.
+    for (let j = 0; j < N; j++) {
+      for (let i = 0; i < N; i++) {
+        const a = base + j * (N + 1) + i, b = a + 1, c = a + N + 2, d = a + N + 1;
+        index.push(a, b, c, a, c, d);
+      }
+    }
+  });
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  geometry.setAttribute("normal", new THREE.Float32BufferAttribute(nor, 3));
+  geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+  geometry.setIndex(index);
+  geometry.computeBoundingSphere();
+  geometryCache.set(key, geometry);
+  return geometry;
+}
+
+/** The mesh a style uses for a die kind (styles with shape "rounded" get casino-style d6s). */
+export function getStyleGeometry(poly, style) {
+  return style?.shape === "rounded" && poly.kind === 6 ? getRoundedCubeGeometry(poly) : getDieGeometry(poly);
+}

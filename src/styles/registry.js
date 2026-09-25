@@ -8,6 +8,9 @@
  *   numerals?: same shape as pips, used for d4/d8/d10/d12/d20,
  *   decorateFace?(painter, face, rng), overlayFace?(painter, face, rng), drawPip?(painter, x, y, r, face, i, rng),
  *   inclusion?: "note"|"moth",
+ *   shape?: "rounded"   (casino-style d6 with sphere-cut corners),
+ *   size?: number       (dice size relative to the standard set, 0.4-1.5),
+ *   collection?: string (groups styles in the menu, e.g. "sargas", "classic"),
  *   physics: { mass, friction, restitution },
  *   sound: "bone"|"wood"|"glass"|"metal"|"stone"|"ceramic"|"resin"
  * }
@@ -26,6 +29,8 @@ export function validateStyle(def) {
   if (!def?.pips?.color) errors.push("pips.color is required");
   if (!PIP_KINDS.includes(def?.pips?.kind)) errors.push(`pips.kind must be one of ${PIP_KINDS.join(", ")}`);
   if (!SOUNDS.includes(def?.sound)) errors.push(`sound must be one of ${SOUNDS.join(", ")}`);
+  if (def?.shape !== undefined && def.shape !== "rounded") errors.push('shape must be "rounded" or left out');
+  if (def?.size !== undefined && !(def.size >= 0.4 && def.size <= 1.5)) errors.push("size must be between 0.4 and 1.5");
   return errors;
 }
 

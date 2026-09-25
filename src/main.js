@@ -3,11 +3,13 @@ import { registerBuiltinStyles, registerStyle, getStyles, getStyle } from "./sty
 import { registerSettings, warnIfFallback } from "./foundry/settings.js";
 import { registerRollHooks, registerSocket, show, preview, getBox } from "./foundry/roll-hooks.js";
 import { StyleConfig } from "./foundry/style-config.js";
+import { registerButtons } from "./foundry/buttons.js";
 
 Hooks.once("init", () => {
   registerBuiltinStyles();
   registerSettings();
   registerRollHooks();
+  registerButtons();
 
   const api = {
     show,
@@ -15,7 +17,7 @@ Hooks.once("init", () => {
     registerStyle,
     getStyles,
     getStyle,
-    openConfig: () => new StyleConfig().render({ force: true }),
+    openConfig: () => StyleConfig.open(),
     get box() {
       return getBox();
     }

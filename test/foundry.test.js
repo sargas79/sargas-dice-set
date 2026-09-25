@@ -14,6 +14,7 @@ vi.mock("../src/engine/dice-box.js", () => ({
   }
 }));
 vi.mock("../src/engine/thumbnail.js", () => ({ styleThumbnail: () => "thumb.png" }));
+const opened = [];
 
 const MODULE = "sargas-dice-set";
 const hooks = new Map();
@@ -54,13 +55,22 @@ globalThis.game = {
     }
   }
 };
-class ApplicationV2 {}
+class ApplicationV2 {
+  render() {
+    opened.push(this);
+    return Promise.resolve(this);
+  }
+}
 globalThis.foundry = {
   applications: { api: { ApplicationV2, HandlebarsApplicationMixin: Base => class extends Base {} }, instances: new Map() },
   utils: { expandObject: o => o }
 };
 globalThis.ui = { notifications: { info: vi.fn(), warn: vi.fn() }, chat: {} };
-globalThis.document = { querySelectorAll: () => [] };
+globalThis.document = {
+  querySelectorAll: () => [],
+  createElement: () => ({ dataset: {}, setAttribute() {}, addEventListener(type, fn) { this.onclick = fn; } })
+};
+globalThis.HTMLElement = class {};
 globalThis.Roll = { fromData: data => ({ dice: data.terms }) };
 
 const term = (faces, ...results) => ({ faces, results: results.map(result => ({ result })) });
@@ -106,7 +116,7 @@ describe("Foundry integration", () => {
     expect(registered.get("enabledStyles").scope).toBe("world");
     expect(game.settings.registerMenu).toHaveBeenCalled();
     expect(hooks.has("createChatMessage")).toBe(true);
-    expect(moduleEntry.api.getStyles()).toHaveLength(14);
+    expect(moduleEntry.api.getStyles()).toHaveLength(22);
     expect(game.socket.on).toHaveBeenCalledWith(`module.${MODULE}`, expect.any(Function));
   });
 
@@ -168,6 +178,40 @@ describe("Foundry integration", () => {
     settings.set("inlineRolls", false);
     await fire("createChatMessage", message({ id: "msg3", dice: [], content }));
     expect(rolls).toHaveLength(1);
+  });
+
+  it("adds a dice style button to the token controls (v13+ object and older array shapes)", async () => {
+    settings.set("showButton", true);
+    const v13 = { tokens: { name: "tokens", tools: { select: {}, target: {} } } };
+    await fire("getSceneControlButtons", v13);
+    const tool = v13.tokens.tools.sargasDiceStyles;
+    expect(tool).toMatchObject({ button: true, icon: "fa-solid fa-dice", order: 2 });
+    opened.length = 0;
+    tool.onChange();
+    expect(opened).toHaveLength(1);
+
+    const legacy = [{ name: "token", tools: [] }];
+    await fire("getSceneControlButtons", legacy);
+    expect(legacy[0].tools.map(t => t.name)).toEqual(["sargasDiceStyles"]);
+
+    settings.set("showButton", false);
+    const hidden = { tokens: { tools: {} } };
+    await fire("getSceneControlButtons", hidden);
+    expect(hidden.tokens.tools).toEqual({});
+  });
+
+  it("adds a dice style button to the chat controls once", async () => {
+    settings.set("showButton", true);
+    const added = [];
+    const controls = { querySelector: () => (added.length ? {} : null), prepend: el => added.push(el) };
+    const root = { querySelector: () => controls };
+    await fire("renderChatLog", {}, [root]);
+    await fire("renderChatLog", {}, [root]);
+    expect(added).toHaveLength(1);
+    expect(added[0].className).toContain("sargas-dice-button");
+    opened.length = 0;
+    added[0].onclick({ preventDefault() {} });
+    expect(opened).toHaveLength(1);
   });
 
   it("replaces Foundry's roll sound with ours", async () => {

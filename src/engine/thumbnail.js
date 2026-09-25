@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { getPolyhedron } from "./polyhedra.js";
-import { getDieGeometry } from "./geometry.js";
+import { getStyleGeometry } from "./geometry.js";
 import { getDieMaterial } from "./materials.js";
 import { createInclusion } from "./inclusions.js";
 
@@ -42,7 +42,7 @@ function getStage(size) {
 export function renderDie(style, { kind = 6, size = 256, quality = "medium", rotation = [0, Math.PI / 4, 0], variant } = {}) {
   const { renderer, scene, camera } = getStage(size);
   const poly = getPolyhedron(kind);
-  const mesh = new THREE.Mesh(getDieGeometry(poly), getDieMaterial(style, kind, { quality, variant }));
+  const mesh = new THREE.Mesh(getStyleGeometry(poly, style), getDieMaterial(style, kind, { quality, variant }));
   const inclusion = createInclusion(style.inclusion, poly);
   if (inclusion) mesh.add(inclusion);
   mesh.rotation.set(...rotation);

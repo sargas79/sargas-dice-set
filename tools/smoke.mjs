@@ -27,7 +27,8 @@ try {
     ["walnut", 1, "1"],
     ["amber-moth", 2, "1"],
     ["riveted-steel", 3, "0"],
-    ["obsidian-gold", 4, "1"]
+    ["obsidian-gold", 4, "1"],
+    ["classic-red", 5, "1"]
   ];
   for (const [style, seed, fit] of rolls) {
     await load(`mode=roll&style=${style}&dice=${dice}&seed=${seed}&speed=4&quality=low&fit=${fit}`);

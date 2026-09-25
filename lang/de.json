@@ -72,6 +72,10 @@
       "reducedMotion": {
         "Name": "Einstellung „Bewegung reduzieren“ beachten",
         "Hint": "Die Würfelanimation überspringen, wenn das Betriebssystem reduzierte Bewegung anfordert."
+      },
+      "showButton": {
+        "Name": "Würfelstil-Schaltfläche anzeigen",
+        "Hint": "Fügt den Token-Werkzeugen und dem Chat eine Würfel-Schaltfläche hinzu, die das Würfelstil-Menü öffnet."
       }
     },
     "Quality": {
@@ -101,7 +105,23 @@
       "Concrete": "Beton",
       "Constellation": "Sternbild",
       "Walnut": "Walnuss",
-      "OilSlick": "Ölfilm"
+      "OilSlick": "Ölfilm",
+      "ClassicPink": "Klassisch Rosa",
+      "ClassicSky": "Klassisch Himmelblau",
+      "ClassicOrange": "Klassisch Orange",
+      "ClassicBrown": "Klassisch Braun",
+      "ClassicGreen": "Klassisch Grün",
+      "ClassicBlue": "Klassisch Blau",
+      "ClassicRed": "Klassisch Rot",
+      "ClassicPurple": "Klassisch Violett"
+    },
+    "Collection": {
+      "sargas": "Sargas-Kollektion",
+      "classic": "Klassisches Acryl (klein)",
+      "other": "Sonstige"
+    },
+    "Controls": {
+      "Button": "Würfelstile"
     }
   }
 }

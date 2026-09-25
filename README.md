@@ -1,6 +1,6 @@
 # Sargas Dice Set
 
-Animated 3D dice for **Foundry VTT v14**. Every roll made by any game system is thrown on screen in one of fourteen hand-designed Sargas styles, and lands on the real result. GMs can turn each style on or off for their world.
+Animated 3D dice for **Foundry VTT v14**. Every roll made by any game system is thrown on screen in one of fourteen hand-designed Sargas styles or eight Classic acrylic sets, and lands on the real result. GMs can turn each style on or off for their world.
 
 ![The fourteen Sargas dice styles](docs/styles.png)
 
@@ -9,6 +9,12 @@ Animated 3D dice for **Foundry VTT v14**. Every roll made by any game system is 
 | Vintage Bone | Obsidian & Gold | Smoke Glass | Riveted Steel | Oxblood & Wax Seal |
 | Cracked Porcelain | Amber Moth | Frost | Archive Ivory | Filigree Silver |
 | Concrete | Constellation | Walnut | Oil Slick | |
+
+### Classic acrylic sets
+
+Eight smaller casino-style dice with rounded corners and big white pips: pink, sky blue, orange, brown, green, blue, red and purple (the darker colours are slightly translucent). They are about 20% smaller than the Sargas dice.
+
+![The eight Classic acrylic sets](docs/classic.png)
 
 All dice kinds are supported: d4, d6, d8, d10, d12, d20 and d100 (shown as a tens die plus a units die), plus Fate dice (dF: +, blank, −), d3 (a d6 showing 1–3 pips twice), d2 and coins (a star for heads, a moon for tails). The d6 uses pips, as in the original designs; the other dice show numerals in the style's pip colour.
 
@@ -25,7 +31,7 @@ Then enable **Sargas Dice Set** in your world. Don't run it at the same time as 
 ## Using it
 
 - **Rolls animate automatically:** chat commands (`/r 2d20kh`), sheet rolls, anything posted with `Roll#toMessage`, and inline rolls written in chat text (`[[1d20]]`). The chat card waits until the dice stop (this can be turned off).
-- **Pick your style:** *Game Settings → Configure Settings → Sargas Dice Set → Choose dice styles.* Everyone at the table sees your dice in your style.
+- **Pick your style:** click the **dice button** in the token controls (left toolbar) or next to the chat controls, or go to *Game Settings → Configure Settings → Sargas Dice Set → Choose dice styles.* Styles are grouped into the Sargas collection and the Classic sets. Everyone at the table sees your dice in your style.
 - **Turn styles on or off (GM):** use the same menu. Each style has its own **Enabled in this world** flag, and players can only pick enabled styles. If a player's style is turned off, their dice switch to the first enabled style and they get a notification. If every style is off, no 3D dice are shown.
 - **Private and blind rolls:** GM-only (`/gmr`) and self (`/sr`) rolls only animate for the players who receive them. For blind rolls (`/br`), players who can't see the result get dice with "?" on every face (or nothing, depending on a setting).
 - **Reduced motion:** if your operating system asks apps to reduce motion, no dice are animated (a setting can override this).
@@ -42,6 +48,7 @@ Then enable **Sargas Dice Set** in your world. Don't run it at the same time as 
 | Show other players' rolls | client | on |
 | Fit dice area to screen | client | on |
 | Follow reduced-motion preference | client | on |
+| Show dice style button | client | on |
 | Hold chat until dice stop | world | on |
 | Dice size | world | 1× |
 | Maximum dice per roll (up to 30) | world | 20 |

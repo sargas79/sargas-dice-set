@@ -72,6 +72,10 @@
       "reducedMotion": {
         "Name": "Rispetta «riduci movimento»",
         "Hint": "Salta l'animazione dei dadi quando il sistema operativo chiede di ridurre il movimento."
+      },
+      "showButton": {
+        "Name": "Mostra il pulsante degli stili dei dadi",
+        "Hint": "Aggiunge un pulsante a forma di dado ai controlli dei token e della chat, che apre il menu degli stili dei dadi."
       }
     },
     "Quality": {
@@ -101,7 +105,23 @@
       "Concrete": "Cemento",
       "Constellation": "Costellazione",
       "Walnut": "Noce",
-      "OilSlick": "Chiazza d'olio"
+      "OilSlick": "Chiazza d'olio",
+      "ClassicPink": "Classico rosa",
+      "ClassicSky": "Classico azzurro",
+      "ClassicOrange": "Classico arancione",
+      "ClassicBrown": "Classico marrone",
+      "ClassicGreen": "Classico verde",
+      "ClassicBlue": "Classico blu",
+      "ClassicRed": "Classico rosso",
+      "ClassicPurple": "Classico viola"
+    },
+    "Collection": {
+      "sargas": "Collezione Sargas",
+      "classic": "Acrilico classico (piccoli)",
+      "other": "Altri"
+    },
+    "Controls": {
+      "Button": "Stili dei dadi"
     }
   }
 }

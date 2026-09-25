@@ -72,6 +72,10 @@
       "reducedMotion": {
         "Name": "Respecter « réduire les animations »",
         "Hint": "Ignorer l'animation des dés quand le système d'exploitation demande de réduire les animations."
+      },
+      "showButton": {
+        "Name": "Afficher le bouton des styles de dés",
+        "Hint": "Ajoute un bouton dé aux contrôles des jetons et du chat, qui ouvre le menu des styles de dés."
       }
     },
     "Quality": {
@@ -101,7 +105,23 @@
       "Concrete": "Béton",
       "Constellation": "Constellation",
       "Walnut": "Noyer",
-      "OilSlick": "Nappe d'huile"
+      "OilSlick": "Nappe d'huile",
+      "ClassicPink": "Classique rose",
+      "ClassicSky": "Classique bleu ciel",
+      "ClassicOrange": "Classique orange",
+      "ClassicBrown": "Classique marron",
+      "ClassicGreen": "Classique vert",
+      "ClassicBlue": "Classique bleu",
+      "ClassicRed": "Classique rouge",
+      "ClassicPurple": "Classique violet"
+    },
+    "Collection": {
+      "sargas": "Collection Sargas",
+      "classic": "Acrylique classique (petits)",
+      "other": "Autres"
+    },
+    "Controls": {
+      "Button": "Styles de dés"
     }
   }
 }

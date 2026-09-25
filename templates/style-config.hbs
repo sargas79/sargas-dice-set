@@ -7,22 +7,27 @@
   </div>
   {{/if}}
   {{#if noneEnabled}}<p class="notification warning">{{localize "SARGAS.Config.NoneEnabled"}}</p>{{/if}}
-  <div class="sargas-style-grid">
-    {{#each styles}}
-    <div class="sargas-style-card {{#unless enabled}}disabled{{/unless}}">
-      <img src="{{thumbnail}}" alt="{{name}}" width="128" height="128">
-      <strong>{{name}}</strong>
-      <label class="sargas-choice">
-        <input type="radio" name="style" value="{{id}}" {{#if selected}}checked{{/if}} {{#unless enabled}}disabled{{/unless}}>
-        {{localize "SARGAS.Config.UseForMe"}}
-      </label>
-      {{#if @root.isGM}}
-      <label class="sargas-choice">
-        <input type="checkbox" name="enabled.{{id}}" {{#if enabled}}checked{{/if}}>
-        {{localize "SARGAS.Config.Enabled"}}
-      </label>
-      {{/if}}
-      <button type="button" class="sargas-preview" data-action="preview" data-style-id="{{id}}"><i class="fa-solid fa-dice"></i> {{localize "SARGAS.Config.Preview"}}</button>
+  <div class="sargas-style-scroll">
+    {{#each collections}}
+    <h3 class="sargas-collection">{{localize label}}</h3>
+    <div class="sargas-style-grid">
+      {{#each styles}}
+      <div class="sargas-style-card {{#unless enabled}}disabled{{/unless}}">
+        <img src="{{thumbnail}}" alt="{{name}}" width="128" height="128">
+        <strong>{{name}}</strong>
+        <label class="sargas-choice">
+          <input type="radio" name="style" value="{{id}}" {{#if selected}}checked{{/if}} {{#unless enabled}}disabled{{/unless}}>
+          {{localize "SARGAS.Config.UseForMe"}}
+        </label>
+        {{#if @root.isGM}}
+        <label class="sargas-choice">
+          <input type="checkbox" name="enabled.{{id}}" {{#if enabled}}checked{{/if}}>
+          {{localize "SARGAS.Config.Enabled"}}
+        </label>
+        {{/if}}
+        <button type="button" class="sargas-preview" data-action="preview" data-style-id="{{id}}"><i class="fa-solid fa-dice"></i> {{localize "SARGAS.Config.Preview"}}</button>
+      </div>
+      {{/each}}
     </div>
     {{/each}}
   </div>

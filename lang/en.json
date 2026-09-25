@@ -72,6 +72,10 @@
       "reducedMotion": {
         "Name": "Follow reduced-motion preference",
         "Hint": "Skip the dice animation when your operating system asks apps to reduce motion."
+      },
+      "showButton": {
+        "Name": "Show dice style button",
+        "Hint": "Add a dice button to the token controls and the chat controls that opens the dice style menu."
       }
     },
     "Quality": {
@@ -101,7 +105,23 @@
       "Concrete": "Concrete",
       "Constellation": "Constellation",
       "Walnut": "Walnut",
-      "OilSlick": "Oil Slick"
+      "OilSlick": "Oil Slick",
+      "ClassicPink": "Classic Pink",
+      "ClassicSky": "Classic Sky Blue",
+      "ClassicOrange": "Classic Orange",
+      "ClassicBrown": "Classic Brown",
+      "ClassicGreen": "Classic Green",
+      "ClassicBlue": "Classic Blue",
+      "ClassicRed": "Classic Red",
+      "ClassicPurple": "Classic Purple"
+    },
+    "Collection": {
+      "sargas": "Sargas collection",
+      "classic": "Classic acrylic (small)",
+      "other": "Other"
+    },
+    "Controls": {
+      "Button": "Dice styles"
     }
   }
 }
