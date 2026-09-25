@@ -18,7 +18,9 @@ export function getBox() {
       speed: get(SETTINGS.speed),
       fadeDelay: get(SETTINGS.fadeDelay),
       volume: get(SETTINGS.volume) * (game.settings.get("core", "globalInterfaceVolume") ?? 1),
-      scale: get(SETTINGS.diceScale)
+      scale: get(SETTINGS.diceScale),
+      fitScreen: get(SETTINGS.fitScreen),
+      respectReducedMotion: get(SETTINGS.reducedMotion)
     })
   });
   return box;

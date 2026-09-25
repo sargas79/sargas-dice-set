@@ -27,7 +27,40 @@ describe("expandDice", () => {
   });
 
   it("skips unsupported dice", () => {
-    expect(expandDice([term(3, 2), { faces: undefined, results: [{ result: 1 }] }, term(6, 4)])).toEqual([{ kind: 6, value: 4 }]);
+    expect(expandDice([term(5, 2), term(7, 3), { faces: undefined, results: [{ result: 1 }] }, term(6, 4)])).toEqual([{ kind: 6, value: 4 }]);
+  });
+
+  it("throws a d3 as a d6 showing 1-3", () => {
+    const [die] = expandDice([term(3, 2)]);
+    expect(die).toEqual({ kind: 6, variant: "d3", value: 2 });
+    expect(faceLabel(6, 5, "d3")).toBe("2");
+  });
+
+  it("throws Fate dice as d6s with +, blank and − faces", () => {
+    const fate = { denomination: "f", faces: 3, results: [{ result: 1 }, { result: 0 }, { result: -1 }] };
+    expect(expandDice([fate])).toEqual([
+      { kind: 6, variant: "fate", value: 1 },
+      { kind: 6, variant: "fate", value: 3 },
+      { kind: 6, variant: "fate", value: 6 }
+    ]);
+  });
+
+  it("recognises Foundry term classes by their DENOMINATION", () => {
+    class FateDie {
+      static DENOMINATION = "f";
+      faces = 3;
+      results = [{ result: -1 }];
+    }
+    expect(expandDice([new FateDie()])).toEqual([{ kind: 6, variant: "fate", value: 6 }]);
+  });
+
+  it("throws coins (heads = 1, tails = 0) and plain d2s", () => {
+    const coin = { denomination: "c", faces: 2, results: [{ result: 1 }, { result: 0 }] };
+    expect(expandDice([coin, term(2, 2)])).toEqual([
+      { kind: 2, variant: "coin", value: 1 },
+      { kind: 2, variant: "coin", value: 2 },
+      { kind: 2, value: 2 }
+    ]);
   });
 
   it("caps the number of dice", () => {
@@ -35,8 +68,11 @@ describe("expandDice", () => {
     expect(expandDice([term(100, 55)], { maxDice: 1 })).toHaveLength(1);
   });
 
-  it("hides results for rolls the viewer cannot see", () => {
-    expect(expandDice([term(20, 20), term(100, 42)], { hidden: true }).every(d => d.value === null)).toBe(true);
+  it("hides results for rolls the viewer cannot see behind \"?\" faces", () => {
+    const dice = expandDice([term(20, 20), term(100, 42), { denomination: "c", faces: 2, results: [{ result: 1 }] }], { hidden: true });
+    expect(dice.map(d => d.kind)).toEqual([20, 10, 10, 2]);
+    expect(dice.every(d => d.value === null && d.variant === "hidden")).toBe(true);
+    expect(faceLabel(20, 7, "hidden")).toBe("?");
   });
 
   it("collects dice from rolls", () => {

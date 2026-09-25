@@ -1,29 +1,55 @@
-import { SUPPORTED_FACES } from "../constants.js";
+/** Fate die results (-1, 0, +1) -> d6 face values: two "+" (1, 2), two blank (3, 4), two "−" (5, 6). */
+const FATE_FACE = { 1: 1, 0: 3, "-1": 6 };
+
+/** Foundry marks the term type with a denomination: "d" die, "c" coin, "f" Fate die. */
+function denominationOf(term) {
+  return term?.constructor?.DENOMINATION ?? term?.denomination ?? "d";
+}
+
+/**
+ * How a dice term is thrown: which solid, which face set, and how a result maps to a face value.
+ * @returns {{kind:number, variant?:string, toValue:(r:number)=>number}|null}  null if the term isn't supported.
+ */
+export function physicalDie(term) {
+  const faces = Number(term?.faces);
+  const denom = denominationOf(term);
+  if (denom === "c") return { kind: 2, variant: "coin", toValue: r => (r === 1 ? 1 : 2) };
+  if (denom === "f") return { kind: 6, variant: "fate", toValue: r => FATE_FACE[r] ?? 3 };
+  if (faces === 2) return { kind: 2, toValue: r => r };
+  if (faces === 3) return { kind: 6, variant: "d3", toValue: r => r };
+  if ([4, 6, 8, 10, 12, 20].includes(faces)) return { kind: faces, toValue: r => r };
+  return null;
+}
 
 /**
  * Turn dice terms into physical dice to throw.
- * Works on Foundry DiceTerm objects or plain {faces, results} objects.
+ * Works on Foundry DiceTerm objects or plain {faces, denomination?, results} objects.
  *
- * @param {{faces:number, results:{result:number, hidden?:boolean}[]}[]} terms
- * @param {{maxDice?:number, hidden?:boolean}} [opts]  hidden: throw without showing real results.
+ * @param {{faces:number, results:{result:number}[]}[]} terms
+ * @param {{maxDice?:number, hidden?:boolean}} [opts]  hidden: the viewer may not see results, so dice show "?".
  * @returns {{kind:number, variant?:string, value:number|null}[]}
  */
 export function expandDice(terms, { maxDice = Infinity, hidden = false } = {}) {
   const out = [];
+  const push = (kind, variant, value) => {
+    if (hidden) out.push({ kind, variant: "hidden", value: null });
+    else out.push(variant ? { kind, variant, value } : { kind, value });
+  };
   for (const term of terms) {
     const faces = Number(term?.faces);
-    if (!SUPPORTED_FACES.includes(faces)) continue;
+    const die = faces === 100 ? null : physicalDie(term);
+    if (faces !== 100 && !die) continue;
     for (const r of term.results ?? []) {
       if (out.length >= maxDice) return out;
-      const value = hidden ? null : Number(r.result);
+      const result = Number(r.result);
       if (faces === 100) {
-        const tens = value == null ? null : Math.floor((value % 100) / 10);
-        const units = value == null ? null : value % 10;
-        out.push({ kind: 10, variant: "tens", value: tens == null ? null : tens === 0 ? 10 : tens });
+        // A d100 is a tens die (00-90) plus a units die (0-9); 100 shows as 00 + 0.
+        const tens = Math.floor((result % 100) / 10), units = result % 10;
+        push(10, "tens", tens === 0 ? 10 : tens);
         if (out.length >= maxDice) return out;
-        out.push({ kind: 10, value: units == null ? null : units === 0 ? 10 : units });
+        push(10, undefined, units === 0 ? 10 : units);
       } else {
-        out.push({ kind: faces, value });
+        push(die.kind, die.variant, die.toValue(result));
       }
     }
   }

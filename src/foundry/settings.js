@@ -15,7 +15,9 @@ export const SETTINGS = {
   diceScale: "diceScale",
   maxDice: "maxDice",
   hiddenRolls: "hiddenRolls",
-  inlineRolls: "inlineRolls"
+  inlineRolls: "inlineRolls",
+  fitScreen: "fitScreen",
+  reducedMotion: "reducedMotion"
 };
 
 export const get = key => game.settings.get(MODULE_ID, key);
@@ -57,6 +59,8 @@ export function registerSettings() {
   reg(SETTINGS.fadeDelay, { scope: "client", config: true, type: Number, default: 2, range: { min: 0, max: 10, step: 0.5 } });
   reg(SETTINGS.volume, { scope: "client", config: true, type: Number, default: 0.5, range: { min: 0, max: 1, step: 0.05 } });
   reg(SETTINGS.showOthers, { scope: "client", config: true, type: Boolean, default: true });
+  reg(SETTINGS.fitScreen, { scope: "client", config: true, type: Boolean, default: true, onChange: () => globalThis.dispatchEvent?.(new Event("resize")) });
+  reg(SETTINGS.reducedMotion, { scope: "client", config: true, type: Boolean, default: true });
   reg(SETTINGS.holdChat, { scope: "world", config: true, type: Boolean, default: true });
   reg(SETTINGS.diceScale, { scope: "world", config: true, type: Number, default: 1, range: { min: 0.6, max: 1.6, step: 0.1 } });
   reg(SETTINGS.maxDice, { scope: "world", config: true, type: Number, default: 20, range: { min: 1, max: 30, step: 1 } });

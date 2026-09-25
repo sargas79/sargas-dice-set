@@ -17,3 +17,24 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Renders every style and die kind with WebGL (SwiftShader) and checks every thrown die shows the rolled value.
+      - run: npm run smoke
+        env:
+          CHROMIUM_PATH: /usr/bin/google-chrome
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-screenshots
+          path: smoke-screenshots/
+          retention-days: 7

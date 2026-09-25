@@ -1,0 +1,107 @@
+{
+  "SARGAS": {
+    "Config": {
+      "Title": "Stili dei dadi Sargas",
+      "HintGM": "Attiva o disattiva ogni stile di dadi per questo mondo e scegli lo stile dei tuoi tiri. I giocatori possono scegliere solo gli stili attivi.",
+      "HintPlayer": "Scegli lo stile dei tuoi dadi. Tutto il tavolo vedrà i tuoi tiri in questo stile.",
+      "EnableAll": "Attiva tutti",
+      "DisableAll": "Disattiva tutti",
+      "Enabled": "Attivo in questo mondo",
+      "UseForMe": "Usa per i miei dadi",
+      "Preview": "Anteprima",
+      "NoneEnabled": "Tutti gli stili sono disattivati, quindi i dadi 3D non vengono mostrati."
+    },
+    "Settings": {
+      "styleConfig": {
+        "Name": "Stili dei dadi",
+        "Label": "Scegli gli stili dei dadi",
+        "Hint": "Scegli il tuo stile di dadi. Il GM può anche attivare o disattivare gli stili per il mondo."
+      },
+      "enabledStyles": {
+        "Name": "Stili dei dadi attivi",
+        "Hint": ""
+      },
+      "enabled": {
+        "Name": "Mostra dadi 3D",
+        "Hint": "Anima i dadi sullo schermo quando si tira."
+      },
+      "quality": {
+        "Name": "Qualità di rendering",
+        "Hint": "Una qualità più bassa usa texture più piccole e niente ombre. Ha effetto dopo il ricaricamento."
+      },
+      "speed": {
+        "Name": "Velocità dell'animazione",
+        "Hint": "Velocità di riproduzione dell'animazione dei dadi."
+      },
+      "fadeDelay": {
+        "Name": "Tempo sul tavolo (secondi)",
+        "Hint": "Per quanto i dadi restano visibili dopo essersi fermati, prima di sparire."
+      },
+      "volume": {
+        "Name": "Volume dei dadi",
+        "Hint": "Volume dei suoni di urto. Imposta 0 per usare il suono di tiro predefinito di Foundry."
+      },
+      "showOthers": {
+        "Name": "Mostra i tiri degli altri giocatori",
+        "Hint": "Anima i dadi dei tiri fatti da altri utenti."
+      },
+      "holdChat": {
+        "Name": "Trattieni la chat finché i dadi si fermano",
+        "Hint": "Nascondi la scheda del tiro in chat finché i dadi non hanno finito di rotolare."
+      },
+      "diceScale": {
+        "Name": "Dimensione dei dadi",
+        "Hint": "Dimensione dei dadi sullo schermo per tutti in questo mondo."
+      },
+      "maxDice": {
+        "Name": "Numero massimo di dadi per tiro",
+        "Hint": "Con più dadi vengono animati solo i primi (fino a 30)."
+      },
+      "hiddenRolls": {
+        "Name": "Tiri che non puoi vedere",
+        "Hint": "Cosa mostrare per i tiri ciechi o privati il cui risultato ti è nascosto."
+      },
+      "inlineRolls": {
+        "Name": "Anima i tiri in linea",
+        "Hint": "Lancia i dadi anche per i tiri in linea scritti in chat, come [[1d20]]."
+      },
+      "fitScreen": {
+        "Name": "Adatta l'area dei dadi allo schermo",
+        "Hint": "I dadi usano tutto lo schermo, qualunque sia la sua forma. Se disattivato si usa un'area fissa 16:9, che mostra esattamente lo stesso lancio a ogni giocatore."
+      },
+      "reducedMotion": {
+        "Name": "Rispetta «riduci movimento»",
+        "Hint": "Salta l'animazione dei dadi quando il sistema operativo chiede di ridurre il movimento."
+      }
+    },
+    "Quality": {
+      "low": "Bassa",
+      "medium": "Media",
+      "high": "Alta"
+    },
+    "HiddenRolls": {
+      "ghost": "Mostra dadi con facce «?»",
+      "none": "Non mostrare nulla"
+    },
+    "Notify": {
+      "Fallback": "Il GM ha disattivato lo stile di dadi che avevi scelto. Ora i tuoi dadi usano {style}.",
+      "DiceSoNice": "Sargas Dice Set e Dice So Nice sono entrambi attivi, quindi ogni tiro verrà animato due volte. Disattivane uno."
+    },
+    "Style": {
+      "VintageBone": "Osso antico",
+      "ObsidianGold": "Ossidiana e oro",
+      "SmokeGlass": "Vetro fumé",
+      "RivetedSteel": "Acciaio rivettato",
+      "OxbloodSeal": "Sangue di bue e ceralacca",
+      "CrackedPorcelain": "Porcellana craquelé",
+      "AmberMoth": "Ambra con falena",
+      "Frost": "Brina",
+      "ArchiveIvory": "Avorio d'archivio",
+      "FiligreeSilver": "Argento filigranato",
+      "Concrete": "Cemento",
+      "Constellation": "Costellazione",
+      "Walnut": "Noce",
+      "OilSlick": "Chiazza d'olio"
+    }
+  }
+}

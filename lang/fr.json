@@ -1,0 +1,107 @@
+{
+  "SARGAS": {
+    "Config": {
+      "Title": "Styles de dés Sargas",
+      "HintGM": "Activez ou désactivez chaque style de dés pour ce monde, et choisissez le style de vos propres jets. Les joueurs ne peuvent choisir que les styles activés.",
+      "HintPlayer": "Choisissez le style de vos dés. Toute la table voit vos jets dans ce style.",
+      "EnableAll": "Tout activer",
+      "DisableAll": "Tout désactiver",
+      "Enabled": "Activé dans ce monde",
+      "UseForMe": "Utiliser pour mes dés",
+      "Preview": "Aperçu",
+      "NoneEnabled": "Tous les styles sont désactivés : aucun dé 3D n'est affiché."
+    },
+    "Settings": {
+      "styleConfig": {
+        "Name": "Styles de dés",
+        "Label": "Choisir les styles de dés",
+        "Hint": "Choisissez votre style de dés. Les MJ activent ou désactivent aussi les styles pour le monde."
+      },
+      "enabledStyles": {
+        "Name": "Styles de dés activés",
+        "Hint": ""
+      },
+      "enabled": {
+        "Name": "Afficher les dés 3D",
+        "Hint": "Animer les dés à l'écran lors des jets."
+      },
+      "quality": {
+        "Name": "Qualité du rendu",
+        "Hint": "Une qualité plus basse utilise des textures plus petites et aucune ombre. Prend effet après rechargement."
+      },
+      "speed": {
+        "Name": "Vitesse d'animation",
+        "Hint": "Vitesse de lecture de l'animation des dés."
+      },
+      "fadeDelay": {
+        "Name": "Temps sur la table (secondes)",
+        "Hint": "Durée pendant laquelle les dés restent visibles une fois arrêtés, avant de disparaître."
+      },
+      "volume": {
+        "Name": "Volume des dés",
+        "Hint": "Volume des bruits de collision. Réglez sur 0 pour utiliser le son de jet par défaut de Foundry."
+      },
+      "showOthers": {
+        "Name": "Afficher les jets des autres joueurs",
+        "Hint": "Animer les dés des jets faits par les autres utilisateurs."
+      },
+      "holdChat": {
+        "Name": "Retenir le chat jusqu'à l'arrêt des dés",
+        "Hint": "Masquer la carte de chat d'un jet jusqu'à ce que ses dés aient fini de rouler."
+      },
+      "diceScale": {
+        "Name": "Taille des dés",
+        "Hint": "Taille des dés à l'écran pour tout le monde dans ce monde."
+      },
+      "maxDice": {
+        "Name": "Nombre maximum de dés par jet",
+        "Hint": "Au-delà, seuls les premiers dés sont animés (jusqu'à 30)."
+      },
+      "hiddenRolls": {
+        "Name": "Jets que vous ne pouvez pas voir",
+        "Hint": "Ce qui est affiché pour les jets aveugles ou privés dont le résultat vous est caché."
+      },
+      "inlineRolls": {
+        "Name": "Animer les jets en ligne",
+        "Hint": "Lancer aussi des dés pour les jets en ligne écrits dans le chat, comme [[1d20]]."
+      },
+      "fitScreen": {
+        "Name": "Adapter la zone des dés à l'écran",
+        "Hint": "Les dés utilisent tout l'écran, quelle que soit sa forme. Désactivé, une zone fixe 16:9 est utilisée, qui joue exactement le même lancer chez chaque joueur."
+      },
+      "reducedMotion": {
+        "Name": "Respecter « réduire les animations »",
+        "Hint": "Ignorer l'animation des dés quand le système d'exploitation demande de réduire les animations."
+      }
+    },
+    "Quality": {
+      "low": "Basse",
+      "medium": "Moyenne",
+      "high": "Haute"
+    },
+    "HiddenRolls": {
+      "ghost": "Afficher des dés à faces « ? »",
+      "none": "Ne rien afficher"
+    },
+    "Notify": {
+      "Fallback": "Le style de dés que vous aviez choisi a été désactivé par le MJ. Vos dés utilisent maintenant {style}.",
+      "DiceSoNice": "Sargas Dice Set et Dice So Nice sont tous deux actifs : chaque jet sera animé deux fois. Désactivez l'un des deux."
+    },
+    "Style": {
+      "VintageBone": "Os ancien",
+      "ObsidianGold": "Obsidienne & or",
+      "SmokeGlass": "Verre fumé",
+      "RivetedSteel": "Acier riveté",
+      "OxbloodSeal": "Sang-de-bœuf & sceau",
+      "CrackedPorcelain": "Porcelaine craquelée",
+      "AmberMoth": "Ambre au papillon",
+      "Frost": "Givre",
+      "ArchiveIvory": "Ivoire d'archive",
+      "FiligreeSilver": "Argent filigrané",
+      "Concrete": "Béton",
+      "Constellation": "Constellation",
+      "Walnut": "Noyer",
+      "OilSlick": "Nappe d'huile"
+    }
+  }
+}
