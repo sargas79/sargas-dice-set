@@ -22,13 +22,24 @@ try {
     await shot(`kinds-${style}`);
   }
 
+  // Oracle d6 textures must be the design's own face artwork (only resampling noise allowed).
+  await load("mode=faces");
+  const faces = await page.evaluate(() => window.facesReport);
+  const worst = Math.max(...faces.map(r => r.meanDiff));
+  const facesOk = faces.length === 36 && worst < 4;
+  console.log(`${facesOk ? "ok  " : "FAIL"} oracle face artwork: ${faces.length} faces, worst mean colour difference ${worst} / 255`);
+  if (!facesOk) failures.push(`Oracle textures differ from the design (worst ${worst}, ${faces.length} faces)`);
+  await shot("oracle-faces");
+
   const dice = "2d6,1d20,1d100,1d4,1d8,1d10,1d12,2dF,2dc,1d3,1d2";
   const rolls = [
     ["walnut", 1, "1"],
     ["amber-moth", 2, "1"],
     ["riveted-steel", 3, "0"],
     ["obsidian-gold", 4, "1"],
-    ["classic-red", 5, "1"]
+    ["classic-red", 5, "1"],
+    ["oracle-sigil", 6, "1"],
+    ["oracle-resin", 7, "0"]
   ];
   for (const [style, seed, fit] of rolls) {
     await load(`mode=roll&style=${style}&dice=${dice}&seed=${seed}&speed=4&quality=low&fit=${fit}`);

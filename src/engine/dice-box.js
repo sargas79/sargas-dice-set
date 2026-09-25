@@ -6,6 +6,7 @@ import { getDieMaterial } from "./materials.js";
 import { createInclusion } from "./inclusions.js";
 import { simulateThrowAsync, remapToResults, trayForAspect } from "./physics.js";
 import { playImpact } from "./sound.js";
+import { preloadStyles } from "./textures/face-images.js";
 import { PHYSICS_HZ, TRAY } from "../constants.js";
 
 const FADE_SECONDS = 0.45;
@@ -141,7 +142,10 @@ export class DiceBox {
     this.ensure();
     const s = this.settings();
     const simDice = dice.map(d => ({ kind: d.kind, physics: d.style.physics, size: d.style.size ?? 1 }));
-    const sim = await simulateThrowAsync({ dice: simDice, seed, scale: s.scale, tray: this.tray });
+    const [sim] = await Promise.all([
+      simulateThrowAsync({ dice: simDice, seed, scale: s.scale, tray: this.tray }),
+      preloadStyles(dice.map(d => d.style))
+    ]);
     if (!this.renderer) this.ensure(); // context was lost while simulating
     const remaps = remapToResults(simDice, sim.tops, dice.map(d => d.value ?? null), seed);
 

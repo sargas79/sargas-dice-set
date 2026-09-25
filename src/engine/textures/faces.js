@@ -2,6 +2,7 @@ import { Painter } from "./canvas.js";
 import { getLayout } from "../layout.js";
 import { createRng } from "../rng.js";
 import { mix } from "./patterns.js";
+import { faceImage, faceImagesReady } from "./face-images.js";
 
 /** Pip positions on a d6 face, in units of half the pip grid. */
 export const PIP_LAYOUT = {
@@ -51,6 +52,8 @@ export function paintAtlas(style, poly, cellPx, variant) {
     const cx = cell.x + cell.w / 2, cy = cell.y + cell.h / 2;
     const toPx = (x, y) => [cx + x * unit, cy - y * unit];
     const polygon = lf.points.map(([x, y]) => toPx(x * layout.chamfer, y * layout.chamfer));
+    // The whole face before chamfering; rounded d6s show all of it.
+    const fullPolygon = lf.points.map(([x, y]) => toPx(x, y));
     const face = {
       kind: poly.kind,
       value: lf.value,
@@ -63,6 +66,7 @@ export function paintAtlas(style, poly, cellPx, variant) {
       unit,
       toPx,
       polygon,
+      fullPolygon,
       /** Distance from the face centre to its nearest edge, in px. */
       inradius: inradius(polygon, cx, cy),
       path: c => {
@@ -76,9 +80,22 @@ export function paintAtlas(style, poly, cellPx, variant) {
     style.decorateFace?.(p, face, rng, ctx);
     drawMarks(p, style, face, rng);
     style.overlayFace?.(p, face, rng, ctx);
+    drawFaceArtwork(p, style, face);
   }
+  // Styles with ready-made face artwork repaint once it has loaded (materials aren't cached until then).
+  p.complete = faceImagesReady(style);
   style.decorateBody?.(p, cells[layout.bodyCell], rng, ctx);
   return p;
+}
+
+/** Supplied d6 face artwork (see face-images.js) replaces the painted colour of the whole face square. */
+function drawFaceArtwork(p, style, face) {
+  if (!style.faceSvg || face.kind !== 6 || (face.variant && face.variant !== "d3")) return;
+  const value = face.variant === "d3" ? ((face.value - 1) % 3) + 1 : face.value;
+  const img = faceImage(style, value);
+  if (!img) return;
+  const half = Math.abs(face.fullPolygon[0][0] - face.cx);
+  p.ctx.color.drawImage(img, face.cx - half, face.cy - half, half * 2, half * 2);
 }
 
 function inradius(polygon, cx, cy) {
@@ -97,6 +114,8 @@ function inradius(polygon, cx, cy) {
 
 function drawMarks(p, style, face, rng) {
   if (face.value === 0) return; // coin rim
+  // A style can draw its own marks; returning true skips the defaults below.
+  if (style.drawMarks?.(p, face, rng)) return;
   if (face.variant === "coin") return drawCoinFace(p, style, face);
   if (face.variant === "fate") return drawFateFace(p, style, face);
   if (face.kind === 6 && face.variant !== "hidden" && !style.pips.numeralsOnD6) {

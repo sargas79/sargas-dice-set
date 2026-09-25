@@ -3,6 +3,7 @@ import { getStyles, getStyle } from "../styles/registry.js";
 import { COLLECTIONS } from "../styles/index.js";
 import { isStyleEnabled, resolveStyle } from "./style-selection.js";
 import { styleThumbnail } from "../engine/thumbnail.js";
+import { preloadStyles } from "../engine/textures/face-images.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -51,6 +52,8 @@ export class StyleConfig extends HandlebarsApplicationMixin(ApplicationV2) {
     const enabledMap = game.settings.get(MODULE_ID, "enabledStyles");
     const isGM = game.user.isGM;
     const current = resolveStyle(game.user.getFlag(MODULE_ID, "style"), getStyles(), enabledMap).style?.id;
+    // Styles with ready-made face artwork need it loaded before their thumbnails are drawn.
+    await preloadStyles(getStyles().filter(s => isGM || isStyleEnabled(enabledMap, s.id)));
     const styles = getStyles()
       .map(s => ({
         id: s.id,

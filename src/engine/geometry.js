@@ -108,13 +108,13 @@ const ROUNDED_GRID = 32;
  * out by the rounding radius). Each face is a grid that keeps its own atlas
  * cell, so pips and textures line up with the chamfered d6.
  */
-export function getRoundedCubeGeometry(poly) {
-  const key = `rounded:${poly.kind}`;
+export function getRoundedCubeGeometry(poly, roundness = ROUNDED_RADIUS) {
+  const key = `rounded:${poly.kind}:${roundness}`;
   if (geometryCache.has(key)) return geometryCache.get(key);
   if (poly.kind !== 6) throw new Error("Rounded geometry is only defined for d6");
   const layout = getLayout(poly);
   const half = v3.len(poly.faces[0].center);
-  const r = half * ROUNDED_RADIUS;
+  const r = half * roundness;
   const inner = half - r;
   const clamp = v => Math.max(-inner, Math.min(inner, v));
   const N = ROUNDED_GRID;
@@ -154,7 +154,7 @@ export function getRoundedCubeGeometry(poly) {
   return geometry;
 }
 
-/** The mesh a style uses for a die kind (styles with shape "rounded" get casino-style d6s). */
+/** The mesh a style uses for a die kind (styles with shape "rounded" get rounded d6s; `roundness` sets the corner radius). */
 export function getStyleGeometry(poly, style) {
-  return style?.shape === "rounded" && poly.kind === 6 ? getRoundedCubeGeometry(poly) : getDieGeometry(poly);
+  return style?.shape === "rounded" && poly.kind === 6 ? getRoundedCubeGeometry(poly, style.roundness ?? ROUNDED_RADIUS) : getDieGeometry(poly);
 }

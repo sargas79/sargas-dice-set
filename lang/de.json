@@ -113,10 +113,17 @@
       "ClassicGreen": "Klassisch Grün",
       "ClassicBlue": "Klassisch Blau",
       "ClassicRed": "Klassisch Rot",
-      "ClassicPurple": "Klassisch Violett"
+      "ClassicPurple": "Klassisch Violett",
+      "OracleBrassWard": "Brass Ward",
+      "OracleMidnightLedger": "Midnight Ledger",
+      "OracleSpecimenResin": "Specimen Resin",
+      "OracleContainmentSteel": "Containment Steel",
+      "OracleArchivist": "Archivist",
+      "OracleSigil": "Sigil"
     },
     "Collection": {
       "sargas": "Sargas-Kollektion",
+      "oracle": "Oracle-Kollektion",
       "classic": "Klassisches Acryl (klein)",
       "other": "Sonstige"
     },
