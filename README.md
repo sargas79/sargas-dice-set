@@ -1,6 +1,6 @@
 # Sargas Dice Set
 
-Animated 3D dice for **Foundry VTT v14**. Every roll made by any game system is thrown on screen in one of fourteen hand-designed Sargas styles or eight Classic acrylic sets, and lands on the real result. GMs can turn each style on or off for their world.
+Animated 3D dice for **Foundry VTT v14**. Every roll made by any game system is thrown on screen in one of fourteen hand-designed Sargas styles, six Oracle finishes or eight Classic acrylic sets, and lands on the real result. GMs can turn each style on or off for their world.
 
 ![The fourteen Sargas dice styles](docs/styles.png)
 
@@ -9,6 +9,12 @@ Animated 3D dice for **Foundry VTT v14**. Every roll made by any game system is 
 | Vintage Bone | Obsidian & Gold | Smoke Glass | Riveted Steel | Oxblood & Wax Seal |
 | Cracked Porcelain | Amber Moth | Frost | Archive Ivory | Filigree Silver |
 | Concrete | Constellation | Walnut | Oil Slick | |
+
+### Oracle finishes
+
+Six finishes from the Archive Dice design, with rounded corners and art-deco detailing: **Brass Ward** (gloss black, bevelled brass frame, emerald pips), **Midnight Ledger** (matte navy, engraved diamond linework, brass pips), **Specimen Resin** (smoked resin holding a glowing green bloom, brass pips), **Containment Steel** (gunmetal, sunken inner panel, teal pips), **Archivist** (matte charcoal, gilt deco border, ivory pips) and **Sigil** (black lacquer, gilt ward circle, teal gem pips). Gem pips and the resin bloom glow softly.
+
+![The six Oracle finishes](docs/oracle.png)
 
 ### Classic acrylic sets
 
@@ -31,7 +37,7 @@ Then enable **Sargas Dice Set** in your world. Don't run it at the same time as 
 ## Using it
 
 - **Rolls animate automatically:** chat commands (`/r 2d20kh`), sheet rolls, anything posted with `Roll#toMessage`, and inline rolls written in chat text (`[[1d20]]`). The chat card waits until the dice stop (this can be turned off).
-- **Pick your style:** click the **dice button** in the token controls (left toolbar) or next to the chat controls, or go to *Game Settings → Configure Settings → Sargas Dice Set → Choose dice styles.* Styles are grouped into the Sargas collection and the Classic sets. Everyone at the table sees your dice in your style.
+- **Pick your style:** click the **dice button** in the token controls (left toolbar) or next to the chat controls, or go to *Game Settings → Configure Settings → Sargas Dice Set → Choose dice styles.* Styles are grouped into the Sargas, Oracle and Classic collections. Everyone at the table sees your dice in your style.
 - **Turn styles on or off (GM):** use the same menu. Each style has its own **Enabled in this world** flag, and players can only pick enabled styles. If a player's style is turned off, their dice switch to the first enabled style and they get a notification. If every style is off, no 3D dice are shown.
 - **Private and blind rolls:** GM-only (`/gmr`) and self (`/sr`) rolls only animate for the players who receive them. For blind rolls (`/br`), players who can't see the result get dice with "?" on every face (or nothing, depending on a setting).
 - **Reduced motion:** if your operating system asks apps to reduce motion, no dice are animated (a setting can override this).

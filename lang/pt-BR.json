@@ -113,10 +113,17 @@
       "ClassicGreen": "Clássico verde",
       "ClassicBlue": "Clássico azul",
       "ClassicRed": "Clássico vermelho",
-      "ClassicPurple": "Clássico roxo"
+      "ClassicPurple": "Clássico roxo",
+      "OracleBrassWard": "Brass Ward",
+      "OracleMidnightLedger": "Midnight Ledger",
+      "OracleSpecimenResin": "Specimen Resin",
+      "OracleContainmentSteel": "Containment Steel",
+      "OracleArchivist": "Archivist",
+      "OracleSigil": "Sigil"
     },
     "Collection": {
       "sargas": "Coleção Sargas",
+      "oracle": "Coleção Oracle",
       "classic": "Acrílico clássico (pequenos)",
       "other": "Outros"
     },

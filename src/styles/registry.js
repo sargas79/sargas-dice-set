@@ -10,6 +10,8 @@
  *   inclusion?: "note"|"moth",
  *   shape?: "rounded"   (casino-style d6 with sphere-cut corners),
  *   size?: number       (dice size relative to the standard set, 0.4-1.5),
+ *   roundness?: number  (corner radius of rounded d6s relative to half the side, 0.05-0.6),
+ *   drawMarks?(painter, face, rng) (draw a face's own marks; return true to skip the default pips/numerals),
  *   collection?: string (groups styles in the menu, e.g. "sargas", "classic"),
  *   physics: { mass, friction, restitution },
  *   sound: "bone"|"wood"|"glass"|"metal"|"stone"|"ceramic"|"resin"
@@ -31,6 +33,7 @@ export function validateStyle(def) {
   if (!SOUNDS.includes(def?.sound)) errors.push(`sound must be one of ${SOUNDS.join(", ")}`);
   if (def?.shape !== undefined && def.shape !== "rounded") errors.push('shape must be "rounded" or left out');
   if (def?.size !== undefined && !(def.size >= 0.4 && def.size <= 1.5)) errors.push("size must be between 0.4 and 1.5");
+  if (def?.roundness !== undefined && !(def.roundness >= 0.05 && def.roundness <= 0.6)) errors.push("roundness must be between 0.05 and 0.6");
   return errors;
 }
 

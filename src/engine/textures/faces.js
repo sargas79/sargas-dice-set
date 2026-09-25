@@ -51,6 +51,8 @@ export function paintAtlas(style, poly, cellPx, variant) {
     const cx = cell.x + cell.w / 2, cy = cell.y + cell.h / 2;
     const toPx = (x, y) => [cx + x * unit, cy - y * unit];
     const polygon = lf.points.map(([x, y]) => toPx(x * layout.chamfer, y * layout.chamfer));
+    // The whole face before chamfering; rounded d6s show all of it.
+    const fullPolygon = lf.points.map(([x, y]) => toPx(x, y));
     const face = {
       kind: poly.kind,
       value: lf.value,
@@ -63,6 +65,7 @@ export function paintAtlas(style, poly, cellPx, variant) {
       unit,
       toPx,
       polygon,
+      fullPolygon,
       /** Distance from the face centre to its nearest edge, in px. */
       inradius: inradius(polygon, cx, cy),
       path: c => {
@@ -97,6 +100,8 @@ function inradius(polygon, cx, cy) {
 
 function drawMarks(p, style, face, rng) {
   if (face.value === 0) return; // coin rim
+  // A style can draw its own marks; returning true skips the defaults below.
+  if (style.drawMarks?.(p, face, rng)) return;
   if (face.variant === "coin") return drawCoinFace(p, style, face);
   if (face.variant === "fate") return drawFateFace(p, style, face);
   if (face.kind === 6 && face.variant !== "hidden" && !style.pips.numeralsOnD6) {
