@@ -1,0 +1,51 @@
+{
+  "SARGAS": {
+    "Config": {
+      "Title": "Sargas Dice Styles",
+      "HintGM": "Turn each dice style on or off for this world, and choose the style used for your own rolls. Players can only pick styles that are turned on.",
+      "HintPlayer": "Choose the style used for your dice. Everyone at the table sees your rolls in this style.",
+      "EnableAll": "Enable all",
+      "DisableAll": "Disable all",
+      "Enabled": "Enabled in this world",
+      "UseForMe": "Use for my dice",
+      "Preview": "Preview",
+      "NoneEnabled": "Every style is turned off, so 3D dice are not shown."
+    },
+    "Settings": {
+      "styleConfig": { "Name": "Dice styles", "Label": "Choose dice styles", "Hint": "Pick your dice style. GMs also turn styles on or off for the world." },
+      "enabledStyles": { "Name": "Enabled dice styles", "Hint": "" },
+      "enabled": { "Name": "Show 3D dice", "Hint": "Animate dice on screen when rolls are made." },
+      "quality": { "Name": "Render quality", "Hint": "Lower quality uses smaller textures and no shadows. Takes effect after reloading." },
+      "speed": { "Name": "Animation speed", "Hint": "Playback speed of the dice animation." },
+      "fadeDelay": { "Name": "Time on table (seconds)", "Hint": "How long dice stay visible after they stop, before fading out." },
+      "volume": { "Name": "Dice sound volume", "Hint": "Volume of the dice collision sounds. Set to 0 to use Foundry's default roll sound instead." },
+      "showOthers": { "Name": "Show other players' rolls", "Hint": "Animate dice for rolls made by other users." },
+      "holdChat": { "Name": "Hold chat until dice stop", "Hint": "Hide a roll's chat card until its dice have finished rolling." },
+      "diceScale": { "Name": "Dice size", "Hint": "Size of the dice on screen for everyone in this world." },
+      "maxDice": { "Name": "Maximum dice per roll", "Hint": "Rolls with more dice than this only animate the first ones." },
+      "hiddenRolls": { "Name": "Rolls you cannot see", "Hint": "What to show for blind or private rolls whose result is hidden from you." }
+    },
+    "Quality": { "low": "Low", "medium": "Medium", "high": "High" },
+    "HiddenRolls": { "ghost": "Show dice without the real result", "none": "Show nothing" },
+    "Notify": {
+      "Fallback": "Your chosen dice style was turned off by the GM. Your dice now use {style}.",
+      "DiceSoNice": "Sargas Dice Set and Dice So Nice are both active, so each roll will animate twice. Disable one of them."
+    },
+    "Style": {
+      "VintageBone": "Vintage Bone",
+      "ObsidianGold": "Obsidian & Gold",
+      "SmokeGlass": "Smoke Glass",
+      "RivetedSteel": "Riveted Steel",
+      "OxbloodSeal": "Oxblood & Wax Seal",
+      "CrackedPorcelain": "Cracked Porcelain",
+      "AmberMoth": "Amber Moth",
+      "Frost": "Frost",
+      "ArchiveIvory": "Archive Ivory",
+      "FiligreeSilver": "Filigree Silver",
+      "Concrete": "Concrete",
+      "Constellation": "Constellation",
+      "Walnut": "Walnut",
+      "OilSlick": "Oil Slick"
+    }
+  }
+}
