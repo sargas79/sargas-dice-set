@@ -82,7 +82,7 @@ node tools/screenshots.mjs out "mode=gallery"            # headless screenshots
 node tools/screenshots.mjs out "mode=kinds&style=walnut" # one style on every die kind
 ```
 
-To develop inside Foundry, clone or link this repository into `Data/modules/sargas-dice-set` and run `npm run build`.
+To develop inside Foundry, clone or link this repository into `Data/modules/sargas-dice-set` and run `npm run build`. The manual release checklist is in [docs/TESTING.md](docs/TESTING.md).
 
 Releases are built by GitHub Actions. Pushing a `v*` tag, or running the **Release** workflow manually, runs the tests, builds the bundle, and publishes `module.zip` and `module.json` to a GitHub release.
 
