@@ -15,7 +15,9 @@ export const PIP_LAYOUT = {
 
 /** Text shown for a face value. */
 export function faceLabel(kind, value, variant) {
+  if (variant === "hidden") return "?";
   if (variant === "tens") return String((value % 10) * 10).padStart(2, "0");
+  if (variant === "d3") return String(((value - 1) % 3) + 1);
   if (kind === 10 && value === 10) return "0";
   return String(value);
 }
@@ -27,7 +29,7 @@ const DEFAULT_FONT = `"Signika", "Palatino Linotype", "Book Antiqua", Georgia, s
  * @param {object} style  A registered dice style.
  * @param {object} poly   From getPolyhedron().
  * @param {number} cellPx Size of each atlas cell in pixels.
- * @param {string} [variant] "tens" for the tens die of a d100.
+ * @param {string} [variant] "tens" (d100 tens die), "d3", "fate", "coin" or "hidden" (every face shows "?").
  */
 export function paintAtlas(style, poly, cellPx, variant) {
   const layout = getLayout(poly);
@@ -54,7 +56,7 @@ export function paintAtlas(style, poly, cellPx, variant) {
       value: lf.value,
       label: faceLabel(poly.kind, lf.value, variant),
       index: lf.index,
-      isMax: lf.value === poly.faces.length,
+      isMax: lf.value === poly.values.length,
       cell,
       cx,
       cy,
@@ -68,7 +70,8 @@ export function paintAtlas(style, poly, cellPx, variant) {
         for (const [x, y] of polygon) c.lineTo(x, y);
         c.closePath();
       },
-      vertexLabels: poly.kind === 4 ? lf.verts.map((vi, j) => ({ label: String(poly.vertexValues[vi]), px: polygon[j] })) : null
+      vertexLabels: poly.kind === 4 ? lf.verts.map((vi, j) => ({ label: variant === "hidden" ? "?" : String(poly.vertexValues[vi]), px: polygon[j] })) : null,
+      variant
     };
     style.decorateFace?.(p, face, rng, ctx);
     drawMarks(p, style, face, rng);
@@ -93,13 +96,19 @@ function inradius(polygon, cx, cy) {
 /* ------------------------------------------------------------------ */
 
 function drawMarks(p, style, face, rng) {
-  if (face.kind === 6 && !style.pips.numeralsOnD6) {
+  if (face.value === 0) return; // coin rim
+  if (face.variant === "coin") return drawCoinFace(p, style, face);
+  if (face.variant === "fate") return drawFateFace(p, style, face);
+  if (face.kind === 6 && face.variant !== "hidden" && !style.pips.numeralsOnD6) {
+    // A d3 is a d6 showing 1-3 pips twice over.
+    const count = face.variant === "d3" ? ((face.value - 1) % 3) + 1 : face.value;
+    const pipFace = count === face.value ? face : { ...face, value: count };
     const half = Math.abs(face.polygon[0][0] - face.cx);
     const spacing = half * (style.pips.spacing ?? 0.55);
     const r = half * (style.pips.size ?? 0.19) * 1.12;
-    PIP_LAYOUT[face.value].forEach(([gx, gy], i) => {
+    PIP_LAYOUT[count].forEach(([gx, gy], i) => {
       const x = face.cx + gx * spacing, y = face.cy - gy * spacing;
-      if (style.drawPip) style.drawPip(p, x, y, r, face, i, rng);
+      if (style.drawPip) style.drawPip(p, x, y, r, pipFace, i, rng);
       else drawPip(p, x, y, r, style.pips, rng);
     });
     return;
@@ -116,6 +125,41 @@ function drawMarks(p, style, face, rng) {
   const size = face.inradius * (face.kind === 10 ? 1.05 : face.kind === 20 ? 1.05 : 1.15);
   const yOff = face.kind === 10 ? face.inradius * 0.2 : face.kind === 20 ? face.inradius * 0.12 : 0;
   drawNumeral(p, style, face.label, face.cx, face.cy + yOff, size, 0, rng, face.kind >= 8 && (face.label === "6" || face.label === "9"));
+}
+
+/** Fate die: "+" on faces 1-2, "−" on faces 5-6, blank on 3-4. */
+function drawFateFace(p, style, face) {
+  const pips = style.numerals ?? style.pips;
+  const surface = markSurface(pips);
+  const half = Math.abs(face.polygon[0][0] - face.cx);
+  const len = half * 0.9, thick = half * 0.22;
+  if (face.value <= 2 || face.value >= 5) p.fillRect(face.cx - len / 2, face.cy - thick / 2, len, thick, surface);
+  if (face.value <= 2) p.fillRect(face.cx - thick / 2, face.cy - len / 2, thick, len, surface);
+}
+
+/** Coin: a ring on both sides, a star on heads (1) and a crescent moon on tails (2). */
+function drawCoinFace(p, style, face) {
+  const pips = style.numerals ?? style.pips;
+  const surface = markSurface(pips);
+  const r = face.inradius;
+  const { cx, cy } = face;
+  p.strokePath(c => c.arc(cx, cy, r * 0.82, 0, Math.PI * 2), r * 0.06, surface);
+  if (face.value === 1) {
+    p.fillPath(c => {
+      for (let i = 0; i < 10; i++) {
+        const a = -Math.PI / 2 + (i * Math.PI) / 5;
+        const rr = i % 2 ? r * 0.24 : r * 0.58;
+        c[i ? "lineTo" : "moveTo"](cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
+      }
+      c.closePath();
+    }, surface);
+  } else {
+    p.fillPath(c => {
+      c.arc(cx, cy, r * 0.5, Math.PI * 0.25, Math.PI * 1.75, false);
+      c.arc(cx + r * 0.2, cy, r * 0.4, Math.PI * 1.7, Math.PI * 0.3, true);
+      c.closePath();
+    }, surface);
+  }
 }
 
 /** Surface description for pips/numerals of a given kind. */

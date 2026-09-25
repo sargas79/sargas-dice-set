@@ -64,6 +64,14 @@
       "inlineRolls": {
         "Name": "Animate inline rolls",
         "Hint": "Also throw dice for inline rolls written in chat text, like [[1d20]]."
+      },
+      "fitScreen": {
+        "Name": "Fit dice area to screen",
+        "Hint": "Let dice use the whole screen, whatever its shape. Turn off to use a fixed 16:9 area, which plays exactly the same throw on every player's screen."
+      },
+      "reducedMotion": {
+        "Name": "Follow reduced-motion preference",
+        "Hint": "Skip the dice animation when your operating system asks apps to reduce motion."
       }
     },
     "Quality": {
@@ -72,7 +80,7 @@
       "high": "High"
     },
     "HiddenRolls": {
-      "ghost": "Show dice without the real result",
+      "ghost": "Show dice with \"?\" faces",
       "none": "Show nothing"
     },
     "Notify": {

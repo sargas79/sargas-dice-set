@@ -8,6 +8,15 @@ Automated checks run with `npm test` in CI:
 - Roll parsing: d100 splits into tens and units, unsupported dice are skipped, the dice cap applies, hidden results are hidden, and inline roll data is decoded.
 - Style flags: missing flags count as enabled, fallback to the first enabled style, and nothing is shown when every style is off.
 - Foundry wiring (mocked): settings, menu, hooks, socket and API are registered; roll modes, show-others and sound replacement work.
+- Translations: every language file has exactly the English keys, and the manifest lists every file.
+
+Browser smoke test in CI (`npm run smoke`, headless Chrome with WebGL):
+
+- Renders every style and every die kind (including dF, d3, coins and "?" faces) without page errors.
+- Throws 15 dice of every kind through the real renderer and checks the value on top of every die matches the roll, with the tray fitted to the screen and with the fixed 16:9 tray.
+- Drops the WebGL context on purpose and checks the next roll rebuilds the renderer and still shows the right values.
+- With "reduce motion" emulated, no dice are drawn.
+- Screenshots are uploaded as a CI artifact.
 
 Manual checks before tagging a release, in a v14 world with the dnd5e system and one GM plus at least one player client:
 
@@ -24,5 +33,9 @@ Manual checks before tagging a release, in a v14 world with the dnd5e system and
 - [ ] GM turns off every style → no 3D dice, and chat cards are not held.
 - [ ] 20 dice in one roll (`/r 20d6`) on the Low quality setting: no errors, smooth playback, and the page stays responsive while the throw is simulated.
 - [ ] Switching to another browser tab during a roll doesn't leave the chat card hidden for more than a few seconds.
-- [ ] Unsupported terms (`/r 1d3`, `/r 4df`) roll in chat without errors.
+- [ ] Fate dice (`/r 4df`), `/r 1d3`, `/r 1d2` and coins (`/r 1dc`) animate and show the chat result.
+- [ ] Unsupported dice (`/r 1d7`) roll in chat without errors and without 3D dice.
+- [ ] Resize the window to portrait and to ultrawide: dice use the whole screen. With "Fit dice area to screen" off, they stay in a 16:9 area.
+- [ ] With the OS "reduce motion" setting on, no dice are animated and chat cards appear at once.
+- [ ] Switch the Foundry language to Deutsch, Français, Español, Italiano or Português (Brasil): settings and the style menu are translated.
 - [ ] No console errors on world load, with the module enabled and disabled.

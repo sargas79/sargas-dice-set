@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import * as CANNON from "cannon-es";
-import { simulateThrow, simulateThrowAsync, remapToResults } from "../src/engine/physics.js";
+import { simulateThrow, simulateThrowAsync, remapToResults, trayForAspect } from "../src/engine/physics.js";
 import { getPolyhedron, readTop } from "../src/engine/polyhedra.js";
 
 function shownValues(dice, sim, remaps) {
@@ -41,6 +41,19 @@ describe("physics", () => {
     expect(sim.frameCount).toBeLessThan(8 * 60);
   });
 
+  it("fits the tray to the screen shape", () => {
+    expect(trayForAspect(16 / 9)).toEqual({ width: 12.4 * (16 / 9), depth: 12.4 });
+    expect(trayForAspect(0.5)).toEqual({ width: 12.4, depth: 24.8 });
+    expect(trayForAspect(100).width).toBeCloseTo(49.6);
+    const tray = trayForAspect(0.5);
+    const sim = simulateThrow({ dice: [{ kind: 6 }, { kind: 20 }, { kind: 2 }], seed: 8, tray });
+    for (const fr of sim.frames) {
+      const o = (sim.frameCount - 1) * 7;
+      expect(Math.abs(fr[o])).toBeLessThan(tray.width / 2);
+      expect(Math.abs(fr[o + 2])).toBeLessThan(tray.depth / 2);
+    }
+  });
+
   it("different seeds give different throws", () => {
     const a = simulateThrow({ dice: [{ kind: 6 }], seed: 1 });
     const b = simulateThrow({ dice: [{ kind: 6 }], seed: 2 });
@@ -48,9 +61,9 @@ describe("physics", () => {
   });
 
   it("always shows the rolled value (1,000+ dice)", { timeout: 60000 }, () => {
-    const kinds = [4, 6, 8, 10, 12, 20];
+    const kinds = [2, 4, 6, 8, 10, 12, 20];
     let checked = 0;
-    for (let seed = 0; seed < 170; seed++) {
+    for (let seed = 0; seed < 150; seed++) {
       const dice = kinds.map(kind => ({ kind }));
       const values = dice.map(d => 1 + ((seed * 7 + d.kind * 3) % d.kind));
       const sim = simulateThrow({ dice, seed });

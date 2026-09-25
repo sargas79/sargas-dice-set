@@ -1,6 +1,6 @@
 {
   "name": "sargas-dice-set",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "3D dice for Foundry VTT v14 with the Sargas dice styles",
   "type": "module",
@@ -10,7 +10,8 @@
     "watch": "node tools/build.mjs --watch",
     "test": "vitest run",
     "demo": "node tools/build.mjs --demo",
-    "thumbnails": "node tools/screenshots.mjs"
+    "thumbnails": "node tools/screenshots.mjs",
+    "smoke": "npm run demo && node tools/smoke.mjs"
   },
   "devDependencies": {
     "cannon-es": "0.20.0",

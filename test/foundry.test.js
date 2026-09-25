@@ -139,7 +139,7 @@ describe("Foundry integration", () => {
 
   it("hides results of rolls the viewer cannot see", async () => {
     await fire("createChatMessage", message({ visible: false }));
-    expect(rolls[0].dice[0].value).toBeNull();
+    expect(rolls[0].dice[0]).toMatchObject({ value: null, variant: "hidden" });
     settings.set("hiddenRolls", "none");
     await fire("createChatMessage", message({ id: "msg2", visible: false }));
     expect(rolls).toHaveLength(1);
@@ -154,7 +154,7 @@ describe("Foundry integration", () => {
   });
 
   it("ignores messages without supported dice and when disabled", async () => {
-    await fire("createChatMessage", message({ dice: [term(3, 2)] }));
+    await fire("createChatMessage", message({ dice: [term(7, 2)] }));
     settings.set("enabled", false);
     await fire("createChatMessage", message());
     expect(rolls).toHaveLength(0);

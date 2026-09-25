@@ -1,0 +1,107 @@
+{
+  "SARGAS": {
+    "Config": {
+      "Title": "Estilos de dados Sargas",
+      "HintGM": "Activa o desactiva cada estilo de dados en este mundo y elige el estilo de tus propias tiradas. Los jugadores solo pueden elegir estilos activados.",
+      "HintPlayer": "Elige el estilo de tus dados. Toda la mesa verá tus tiradas con este estilo.",
+      "EnableAll": "Activar todos",
+      "DisableAll": "Desactivar todos",
+      "Enabled": "Activado en este mundo",
+      "UseForMe": "Usar para mis dados",
+      "Preview": "Vista previa",
+      "NoneEnabled": "Todos los estilos están desactivados, así que no se muestran dados 3D."
+    },
+    "Settings": {
+      "styleConfig": {
+        "Name": "Estilos de dados",
+        "Label": "Elegir estilos de dados",
+        "Hint": "Elige tu estilo de dados. Los DJ también activan o desactivan estilos para el mundo."
+      },
+      "enabledStyles": {
+        "Name": "Estilos de dados activados",
+        "Hint": ""
+      },
+      "enabled": {
+        "Name": "Mostrar dados 3D",
+        "Hint": "Animar dados en pantalla al hacer tiradas."
+      },
+      "quality": {
+        "Name": "Calidad de renderizado",
+        "Hint": "Una calidad menor usa texturas más pequeñas y sin sombras. Se aplica tras recargar."
+      },
+      "speed": {
+        "Name": "Velocidad de animación",
+        "Hint": "Velocidad de reproducción de la animación de los dados."
+      },
+      "fadeDelay": {
+        "Name": "Tiempo en la mesa (segundos)",
+        "Hint": "Cuánto tiempo siguen visibles los dados tras detenerse, antes de desvanecerse."
+      },
+      "volume": {
+        "Name": "Volumen de los dados",
+        "Hint": "Volumen de los sonidos de choque. Ponlo a 0 para usar el sonido de tirada predeterminado de Foundry."
+      },
+      "showOthers": {
+        "Name": "Mostrar tiradas de otros jugadores",
+        "Hint": "Animar dados de las tiradas de otros usuarios."
+      },
+      "holdChat": {
+        "Name": "Retener el chat hasta que paren los dados",
+        "Hint": "Ocultar la tarjeta de chat de una tirada hasta que sus dados terminen de rodar."
+      },
+      "diceScale": {
+        "Name": "Tamaño de los dados",
+        "Hint": "Tamaño de los dados en pantalla para todos en este mundo."
+      },
+      "maxDice": {
+        "Name": "Máximo de dados por tirada",
+        "Hint": "Si hay más dados, solo se animan los primeros (hasta 30)."
+      },
+      "hiddenRolls": {
+        "Name": "Tiradas que no puedes ver",
+        "Hint": "Qué mostrar en tiradas a ciegas o privadas cuyo resultado se te oculta."
+      },
+      "inlineRolls": {
+        "Name": "Animar tiradas en línea",
+        "Hint": "Lanzar también dados para tiradas en línea escritas en el chat, como [[1d20]]."
+      },
+      "fitScreen": {
+        "Name": "Ajustar el área de dados a la pantalla",
+        "Hint": "Los dados usan toda la pantalla, tenga la forma que tenga. Desactivado, se usa un área fija 16:9 que reproduce exactamente la misma tirada para todos los jugadores."
+      },
+      "reducedMotion": {
+        "Name": "Respetar «reducir movimiento»",
+        "Hint": "Omitir la animación de los dados cuando el sistema operativo pide reducir el movimiento."
+      }
+    },
+    "Quality": {
+      "low": "Baja",
+      "medium": "Media",
+      "high": "Alta"
+    },
+    "HiddenRolls": {
+      "ghost": "Mostrar dados con caras «?»",
+      "none": "No mostrar nada"
+    },
+    "Notify": {
+      "Fallback": "El DJ desactivó el estilo de dados que elegiste. Tus dados ahora usan {style}.",
+      "DiceSoNice": "Sargas Dice Set y Dice So Nice están activos a la vez, así que cada tirada se animará dos veces. Desactiva uno de ellos."
+    },
+    "Style": {
+      "VintageBone": "Hueso antiguo",
+      "ObsidianGold": "Obsidiana y oro",
+      "SmokeGlass": "Cristal ahumado",
+      "RivetedSteel": "Acero remachado",
+      "OxbloodSeal": "Sangre de buey y lacre",
+      "CrackedPorcelain": "Porcelana agrietada",
+      "AmberMoth": "Ámbar con polilla",
+      "Frost": "Escarcha",
+      "ArchiveIvory": "Marfil de archivo",
+      "FiligreeSilver": "Plata filigrana",
+      "Concrete": "Hormigón",
+      "Constellation": "Constelación",
+      "Walnut": "Nogal",
+      "OilSlick": "Mancha de aceite"
+    }
+  }
+}

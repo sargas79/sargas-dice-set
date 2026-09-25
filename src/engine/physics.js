@@ -1,7 +1,7 @@
 import * as CANNON from "cannon-es";
 import { getPolyhedron, readTop, remapRotation, m3 } from "./polyhedra.js";
 import { createRng } from "./rng.js";
-import { PHYSICS_HZ, TRAY } from "../constants.js";
+import { PHYSICS_HZ, TRAY, TRAY_SHORT_SIDE } from "../constants.js";
 
 const GRAVITY = -70;
 const MAX_SECONDS = 8;
@@ -37,10 +37,11 @@ function hullShape(kind, scale) {
  * @param {{kind:number, physics?:object}[]} opts.dice  One entry per physical die (d100 is two d10s).
  * @param {number|string} opts.seed
  * @param {number} [opts.scale=1]  Dice size multiplier.
+ * @param {{width:number, depth:number}} [opts.tray]  Tray size in world units (default: fixed 16:9 tray).
  * @returns {{frameCount:number, frames:Float32Array[], collisions:{frame:number,die:number,strength:number}[], tops:{value:number,direction:number[],alignment:number}[]}}
  */
-export function simulateThrow({ dice, seed, scale = 1 }) {
-  const steps = throwSteps(dice, seed, scale);
+export function simulateThrow({ dice, seed, scale = 1, tray = TRAY }) {
+  const steps = throwSteps(dice, seed, scale, tray);
   let r = steps.next();
   while (!r.done) r = steps.next();
   return r.value;
@@ -52,8 +53,8 @@ export function simulateThrow({ dice, seed, scale = 1 }) {
  * @param {object} opts  As simulateThrow.
  * @param {number} [budgetMs=8]  Work per slice before yielding.
  */
-export async function simulateThrowAsync({ dice, seed, scale = 1 }, budgetMs = 8) {
-  const steps = throwSteps(dice, seed, scale);
+export async function simulateThrowAsync({ dice, seed, scale = 1, tray = TRAY }, budgetMs = 8) {
+  const steps = throwSteps(dice, seed, scale, tray);
   let r = steps.next();
   let sliceStart = performance.now();
   while (!r.done) {
@@ -67,17 +68,17 @@ export async function simulateThrowAsync({ dice, seed, scale = 1 }, budgetMs = 8
 }
 
 /** Generator that yields between physics steps and returns the throw result. */
-function* throwSteps(dice, seed, scale) {
+function* throwSteps(dice, seed, scale, tray) {
   const rng = createRng(seed);
   let result;
   for (let attempt = 0, max = maxAttempts(dice.length); attempt < max; attempt++) {
-    result = yield* runOnce(dice, rng, scale);
+    result = yield* runOnce(dice, rng, scale, tray);
     if (result.tops.every(t => t.alignment >= FLAT_ALIGNMENT)) break;
   }
   return result;
 }
 
-function* runOnce(dice, rng, scale) {
+function* runOnce(dice, rng, scale, tray) {
   const world = new CANNON.World({ gravity: new CANNON.Vec3(0, GRAVITY, 0), allowSleep: true });
   world.solver.iterations = 14;
   world.broadphase = new CANNON.SAPBroadphase(world);
@@ -88,7 +89,7 @@ function* runOnce(dice, rng, scale) {
   floor.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
   world.addBody(floor);
 
-  const hw = TRAY.width / 2, hd = TRAY.depth / 2;
+  const hw = tray.width / 2, hd = tray.depth / 2;
   const walls = [
     [new CANNON.Vec3(-hw, 0, 0), [0, Math.PI / 2, 0]],
     [new CANNON.Vec3(hw, 0, 0), [0, -Math.PI / 2, 0]],
@@ -184,6 +185,16 @@ function* runOnce(dice, rng, scale) {
     return readTop(getPolyhedron(dice[i].kind), [up.x, up.y, up.z]);
   });
   return { frameCount: frame + 1, frames: buffers.map(b => Float32Array.from(b)), collisions, tops };
+}
+
+/**
+ * Tray matching a screen shape: the short side stays fixed so dice keep their
+ * on-screen size, and the long side stretches to fill the screen.
+ * @param {number} aspect  Width / height of the screen.
+ */
+export function trayForAspect(aspect) {
+  const a = Math.min(4, Math.max(0.25, aspect || 16 / 9));
+  return a >= 1 ? { width: TRAY_SHORT_SIDE * a, depth: TRAY_SHORT_SIDE } : { width: TRAY_SHORT_SIDE, depth: TRAY_SHORT_SIDE / a };
 }
 
 /**

@@ -4,7 +4,7 @@ import { v3 } from "./polyhedra.js";
 const CELL_FIT = 0.9;
 
 /** Chamfer factor: how far faces are shrunk toward their centre to make rounded edges. */
-export const CHAMFER = { 4: 0.86, 6: 0.88, 8: 0.87, 10: 0.86, 12: 0.9, 20: 0.88 };
+export const CHAMFER = { 2: 0.93, 4: 0.86, 6: 0.88, 8: 0.87, 10: 0.86, 12: 0.9, 20: 0.88 };
 
 /**
  * Texture atlas layout shared by the geometry builder (UVs) and the face

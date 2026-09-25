@@ -4,3 +4,5 @@ demo/dist/
 release/
 *.zip
 .scratch/
+smoke-screenshots/
+screenshots/

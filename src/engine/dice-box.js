@@ -1,15 +1,15 @@
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import { getPolyhedron } from "./polyhedra.js";
+import { getPolyhedron, readTop } from "./polyhedra.js";
 import { getDieGeometry } from "./geometry.js";
 import { getDieMaterial } from "./materials.js";
 import { createInclusion } from "./inclusions.js";
-import { simulateThrowAsync, remapToResults } from "./physics.js";
+import { simulateThrowAsync, remapToResults, trayForAspect } from "./physics.js";
 import { playImpact } from "./sound.js";
 import { PHYSICS_HZ, TRAY } from "../constants.js";
 
 const FADE_SECONDS = 0.45;
-const DEFAULTS = { quality: "medium", speed: 1, fadeDelay: 2, volume: 0.5, scale: 1, zIndex: 90 };
+const DEFAULTS = { quality: "medium", speed: 1, fadeDelay: 2, volume: 0.5, scale: 1, zIndex: 90, fitScreen: true, respectReducedMotion: true };
 
 /**
  * Full-screen transparent WebGL overlay that plays back simulated throws.
@@ -19,7 +19,7 @@ export class DiceBox {
   /**
    * @param {object} [opts]
    * @param {HTMLElement} [opts.container]
-   * @param {() => object} [opts.settings]  Returns {quality, speed, fadeDelay, volume, scale}.
+   * @param {() => object} [opts.settings]  Returns {quality, speed, fadeDelay, volume, scale, fitScreen, respectReducedMotion}.
    */
   constructor({ container, settings } = {}) {
     this.container = container ?? document.body;
@@ -28,6 +28,8 @@ export class DiceBox {
     this.running = false;
     this._frame = this._frame.bind(this);
     this._onResize = this._onResize.bind(this);
+    this._onContextLost = this._onContextLost.bind(this);
+    this.tray = TRAY;
   }
 
   /** Create the renderer on first use. */
@@ -43,6 +45,8 @@ export class DiceBox {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     const el = renderer.domElement;
     el.id = "sargas-dice-canvas";
+    // If the GPU drops the context (sleep, driver reset, too many tabs), tear down and rebuild on the next roll.
+    el.addEventListener("webglcontextlost", this._onContextLost);
     Object.assign(el.style, { position: "fixed", inset: "0", width: "100%", height: "100%", pointerEvents: "none", zIndex: String(s.zIndex) });
     this.container.appendChild(el);
     this.renderer = renderer;
@@ -62,13 +66,15 @@ export class DiceBox {
     key.castShadow = true;
     const shadowSize = { low: 512, medium: 1024, high: 2048 }[s.quality] ?? 1024;
     key.shadow.mapSize.set(shadowSize, shadowSize);
-    Object.assign(key.shadow.camera, { left: -TRAY.width / 2 - 2, right: TRAY.width / 2 + 2, top: TRAY.depth / 2 + 2, bottom: -TRAY.depth / 2 - 2, near: 1, far: 60 });
+    key.shadow.camera.near = 1;
+    key.shadow.camera.far = 60;
     key.shadow.radius = 4;
+    this.key = key;
     key.shadow.bias = -0.0005;
     scene.add(key);
     scene.add(new THREE.HemisphereLight(0xffffff, 0x404040, 0.5));
 
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(TRAY.width * 2, TRAY.depth * 2), new THREE.ShadowMaterial({ opacity: 0.35 }));
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.ShadowMaterial({ opacity: 0.35 }));
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     scene.add(floor);
@@ -87,9 +93,13 @@ export class DiceBox {
     this.renderer.setSize(w, h, false);
     const cam = this.camera;
     cam.aspect = w / h;
+    // The tray follows the screen shape (or stays a fixed 16:9, which gives identical throws on every client).
+    const tray = (this.tray = s.fitScreen ? trayForAspect(cam.aspect) : TRAY);
+    Object.assign(this.key.shadow.camera, { left: -tray.width / 2 - 2, right: tray.width / 2 + 2, top: tray.depth / 2 + 2, bottom: -tray.depth / 2 - 2 });
+    this.key.shadow.camera.updateProjectionMatrix();
     // Fit the whole tray on screen ("contain").
     const t = Math.tan(THREE.MathUtils.degToRad(cam.fov / 2));
-    const dist = Math.max(TRAY.depth / 2 / t, TRAY.width / 2 / (t * cam.aspect)) + 1;
+    const dist = Math.max(tray.depth / 2 / t, tray.width / 2 / (t * cam.aspect)) + 1;
     cam.position.set(0, dist, 0);
     cam.lookAt(0, 0, 0);
     cam.updateProjectionMatrix();
@@ -122,10 +132,17 @@ export class DiceBox {
       resolveDone();
       return;
     }
+    // Respect the operating system's "reduce motion" preference.
+    if (this.settings().respectReducedMotion && globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      resolveSettled();
+      resolveDone();
+      return;
+    }
     this.ensure();
     const s = this.settings();
     const simDice = dice.map(d => ({ kind: d.kind, physics: d.style.physics }));
-    const sim = await simulateThrowAsync({ dice: simDice, seed, scale: s.scale });
+    const sim = await simulateThrowAsync({ dice: simDice, seed, scale: s.scale, tray: this.tray });
+    if (!this.renderer) this.ensure(); // context was lost while simulating
     const remaps = remapToResults(simDice, sim.tops, dice.map(d => d.value ?? null), seed);
 
     // Dice from earlier rolls that have already stopped make room for the new throw.
@@ -139,6 +156,7 @@ export class DiceBox {
       const inclusion = createInclusion(d.style.inclusion, poly);
       if (inclusion) mesh.add(inclusion);
       mesh.userData.remap = new THREE.Quaternion(...remaps[i]);
+      mesh.userData.kind = d.kind;
       mesh.userData.baseScale = s.scale;
       mesh.scale.setScalar(s.scale);
       group.add(mesh);
@@ -165,6 +183,20 @@ export class DiceBox {
     this._start();
   }
 
+  /**
+   * The value each visible die shows on top right now, per throw (for tests and debugging).
+   * @returns {number[][]}
+   */
+  shownValues() {
+    const up = new THREE.Vector3();
+    return [...this.throws].map(t =>
+      t.meshes.map(m => {
+        up.set(0, 1, 0).applyQuaternion(m.quaternion.clone().invert());
+        return readTop(getPolyhedron(m.userData.kind), [up.x, up.y, up.z]).value;
+      })
+    );
+  }
+
   /** Remove all dice immediately. */
   clear() {
     for (const t of this.throws) this._remove(t);
@@ -178,6 +210,10 @@ export class DiceBox {
   }
 
   _frame(now) {
+    if (!this.renderer) {
+      this.running = false;
+      return;
+    }
     for (const t of [...this.throws]) this._update(t, now);
     this.renderer.render(this.scene, this.camera);
     if (this.throws.size) requestAnimationFrame(this._frame);
@@ -228,6 +264,24 @@ export class DiceBox {
       qb.set(fr[o1 + 3], fr[o1 + 4], fr[o1 + 5], fr[o1 + 6]);
       mesh.quaternion.slerpQuaternions(qa, qb, a).multiply(mesh.userData.remap);
     });
+  }
+
+  /** Drop the renderer after a GPU context loss; ensure() builds a fresh one on the next roll. */
+  _onContextLost(event) {
+    event.preventDefault();
+    console.warn("Sargas Dice | WebGL context lost; the dice renderer will be rebuilt on the next roll");
+    for (const t of [...this.throws]) this._remove(t);
+    window.removeEventListener("resize", this._onResize);
+    const el = this.renderer?.domElement;
+    el?.removeEventListener("webglcontextlost", this._onContextLost);
+    el?.remove();
+    try {
+      this.renderer?.dispose();
+    } catch {
+      /* the context is already gone */
+    }
+    this.renderer = this.scene = this.camera = this.key = null;
+    this.running = false;
   }
 
   _remove(t) {

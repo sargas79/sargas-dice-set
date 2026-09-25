@@ -1,0 +1,107 @@
+{
+  "SARGAS": {
+    "Config": {
+      "Title": "Sargas-Würfelstile",
+      "HintGM": "Schalte jeden Würfelstil für diese Welt ein oder aus und wähle den Stil für deine eigenen Würfe. Spieler können nur eingeschaltete Stile wählen.",
+      "HintPlayer": "Wähle den Stil deiner Würfel. Alle am Tisch sehen deine Würfe in diesem Stil.",
+      "EnableAll": "Alle aktivieren",
+      "DisableAll": "Alle deaktivieren",
+      "Enabled": "In dieser Welt aktiviert",
+      "UseForMe": "Für meine Würfel verwenden",
+      "Preview": "Vorschau",
+      "NoneEnabled": "Alle Stile sind ausgeschaltet, daher werden keine 3D-Würfel angezeigt."
+    },
+    "Settings": {
+      "styleConfig": {
+        "Name": "Würfelstile",
+        "Label": "Würfelstile wählen",
+        "Hint": "Wähle deinen Würfelstil. Spielleiter schalten Stile außerdem für die Welt ein oder aus."
+      },
+      "enabledStyles": {
+        "Name": "Aktivierte Würfelstile",
+        "Hint": ""
+      },
+      "enabled": {
+        "Name": "3D-Würfel anzeigen",
+        "Hint": "Würfel bei Würfen auf dem Bildschirm animieren."
+      },
+      "quality": {
+        "Name": "Darstellungsqualität",
+        "Hint": "Niedrigere Qualität nutzt kleinere Texturen und keine Schatten. Wirkt nach dem Neuladen."
+      },
+      "speed": {
+        "Name": "Animationsgeschwindigkeit",
+        "Hint": "Abspielgeschwindigkeit der Würfelanimation."
+      },
+      "fadeDelay": {
+        "Name": "Zeit auf dem Tisch (Sekunden)",
+        "Hint": "Wie lange Würfel nach dem Stillstand sichtbar bleiben, bevor sie ausblenden."
+      },
+      "volume": {
+        "Name": "Lautstärke der Würfelgeräusche",
+        "Hint": "Lautstärke der Aufprallgeräusche. Bei 0 wird stattdessen Foundrys Standard-Würfelgeräusch verwendet."
+      },
+      "showOthers": {
+        "Name": "Würfe anderer Spieler anzeigen",
+        "Hint": "Würfel auch für Würfe anderer Benutzer animieren."
+      },
+      "holdChat": {
+        "Name": "Chat bis zum Stillstand zurückhalten",
+        "Hint": "Die Chatkarte eines Wurfs erst zeigen, wenn die Würfel liegen."
+      },
+      "diceScale": {
+        "Name": "Würfelgröße",
+        "Hint": "Größe der Würfel auf dem Bildschirm für alle in dieser Welt."
+      },
+      "maxDice": {
+        "Name": "Maximale Würfel pro Wurf",
+        "Hint": "Bei mehr Würfeln werden nur die ersten animiert (bis zu 30)."
+      },
+      "hiddenRolls": {
+        "Name": "Würfe, die du nicht sehen darfst",
+        "Hint": "Was bei blinden oder privaten Würfen angezeigt wird, deren Ergebnis vor dir verborgen ist."
+      },
+      "inlineRolls": {
+        "Name": "Inline-Würfe animieren",
+        "Hint": "Auch für Inline-Würfe im Chattext wie [[1d20]] Würfel werfen."
+      },
+      "fitScreen": {
+        "Name": "Würfelbereich an Bildschirm anpassen",
+        "Hint": "Würfel nutzen den ganzen Bildschirm, egal welches Format. Ausgeschaltet wird ein fester 16:9-Bereich genutzt, der bei allen Spielern exakt denselben Wurf zeigt."
+      },
+      "reducedMotion": {
+        "Name": "Einstellung „Bewegung reduzieren“ beachten",
+        "Hint": "Die Würfelanimation überspringen, wenn das Betriebssystem reduzierte Bewegung anfordert."
+      }
+    },
+    "Quality": {
+      "low": "Niedrig",
+      "medium": "Mittel",
+      "high": "Hoch"
+    },
+    "HiddenRolls": {
+      "ghost": "Würfel mit „?“-Seiten zeigen",
+      "none": "Nichts anzeigen"
+    },
+    "Notify": {
+      "Fallback": "Dein gewählter Würfelstil wurde vom Spielleiter ausgeschaltet. Deine Würfel verwenden jetzt {style}.",
+      "DiceSoNice": "Sargas Dice Set und Dice So Nice sind beide aktiv, daher wird jeder Wurf doppelt animiert. Deaktiviere eines der beiden."
+    },
+    "Style": {
+      "VintageBone": "Alter Knochen",
+      "ObsidianGold": "Obsidian & Gold",
+      "SmokeGlass": "Rauchglas",
+      "RivetedSteel": "Genieteter Stahl",
+      "OxbloodSeal": "Ochsenblut & Siegellack",
+      "CrackedPorcelain": "Rissiges Porzellan",
+      "AmberMoth": "Bernstein-Motte",
+      "Frost": "Frost",
+      "ArchiveIvory": "Archiv-Elfenbein",
+      "FiligreeSilver": "Filigransilber",
+      "Concrete": "Beton",
+      "Constellation": "Sternbild",
+      "Walnut": "Walnuss",
+      "OilSlick": "Ölfilm"
+    }
+  }
+}

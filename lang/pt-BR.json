@@ -1,0 +1,107 @@
+{
+  "SARGAS": {
+    "Config": {
+      "Title": "Estilos de dados Sargas",
+      "HintGM": "Ative ou desative cada estilo de dados neste mundo e escolha o estilo das suas próprias rolagens. Jogadores só podem escolher estilos ativados.",
+      "HintPlayer": "Escolha o estilo dos seus dados. Toda a mesa vê suas rolagens neste estilo.",
+      "EnableAll": "Ativar todos",
+      "DisableAll": "Desativar todos",
+      "Enabled": "Ativado neste mundo",
+      "UseForMe": "Usar nos meus dados",
+      "Preview": "Pré-visualizar",
+      "NoneEnabled": "Todos os estilos estão desativados, então nenhum dado 3D é exibido."
+    },
+    "Settings": {
+      "styleConfig": {
+        "Name": "Estilos de dados",
+        "Label": "Escolher estilos de dados",
+        "Hint": "Escolha seu estilo de dados. Mestres também ativam ou desativam estilos para o mundo."
+      },
+      "enabledStyles": {
+        "Name": "Estilos de dados ativados",
+        "Hint": ""
+      },
+      "enabled": {
+        "Name": "Mostrar dados 3D",
+        "Hint": "Animar dados na tela quando houver rolagens."
+      },
+      "quality": {
+        "Name": "Qualidade de renderização",
+        "Hint": "Qualidade menor usa texturas menores e sem sombras. Vale após recarregar."
+      },
+      "speed": {
+        "Name": "Velocidade da animação",
+        "Hint": "Velocidade de reprodução da animação dos dados."
+      },
+      "fadeDelay": {
+        "Name": "Tempo na mesa (segundos)",
+        "Hint": "Quanto tempo os dados ficam visíveis depois de parar, antes de sumir."
+      },
+      "volume": {
+        "Name": "Volume dos dados",
+        "Hint": "Volume dos sons de colisão. Use 0 para usar o som de rolagem padrão do Foundry."
+      },
+      "showOthers": {
+        "Name": "Mostrar rolagens de outros jogadores",
+        "Hint": "Animar dados das rolagens feitas por outros usuários."
+      },
+      "holdChat": {
+        "Name": "Segurar o chat até os dados pararem",
+        "Hint": "Ocultar o cartão de chat de uma rolagem até os dados terminarem de rolar."
+      },
+      "diceScale": {
+        "Name": "Tamanho dos dados",
+        "Hint": "Tamanho dos dados na tela para todos neste mundo."
+      },
+      "maxDice": {
+        "Name": "Máximo de dados por rolagem",
+        "Hint": "Com mais dados, só os primeiros são animados (até 30)."
+      },
+      "hiddenRolls": {
+        "Name": "Rolagens que você não pode ver",
+        "Hint": "O que mostrar em rolagens às cegas ou privadas cujo resultado está oculto para você."
+      },
+      "inlineRolls": {
+        "Name": "Animar rolagens em linha",
+        "Hint": "Também lançar dados para rolagens em linha escritas no chat, como [[1d20]]."
+      },
+      "fitScreen": {
+        "Name": "Ajustar a área dos dados à tela",
+        "Hint": "Os dados usam a tela inteira, seja qual for o formato. Desativado, usa uma área fixa 16:9 que mostra exatamente o mesmo lançamento para todos os jogadores."
+      },
+      "reducedMotion": {
+        "Name": "Respeitar \"reduzir movimento\"",
+        "Hint": "Pular a animação dos dados quando o sistema operacional pede para reduzir movimento."
+      }
+    },
+    "Quality": {
+      "low": "Baixa",
+      "medium": "Média",
+      "high": "Alta"
+    },
+    "HiddenRolls": {
+      "ghost": "Mostrar dados com faces \"?\"",
+      "none": "Não mostrar nada"
+    },
+    "Notify": {
+      "Fallback": "O estilo de dados que você escolheu foi desativado pelo Mestre. Seus dados agora usam {style}.",
+      "DiceSoNice": "Sargas Dice Set e Dice So Nice estão ativos ao mesmo tempo, então cada rolagem será animada duas vezes. Desative um deles."
+    },
+    "Style": {
+      "VintageBone": "Osso antigo",
+      "ObsidianGold": "Obsidiana e ouro",
+      "SmokeGlass": "Vidro fumê",
+      "RivetedSteel": "Aço rebitado",
+      "OxbloodSeal": "Sangue de boi e lacre",
+      "CrackedPorcelain": "Porcelana rachada",
+      "AmberMoth": "Âmbar com mariposa",
+      "Frost": "Geada",
+      "ArchiveIvory": "Marfim de arquivo",
+      "FiligreeSilver": "Prata filigranada",
+      "Concrete": "Concreto",
+      "Constellation": "Constelação",
+      "Walnut": "Nogueira",
+      "OilSlick": "Mancha de óleo"
+    }
+  }
+}

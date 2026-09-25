@@ -86,7 +86,19 @@ function signs(n) {
   return out;
 }
 
+/** Coin: a thin 16-sided prism (half-thickness relative to its radius). */
+const COIN_SIDES = 16;
+const COIN_HALF_THICKNESS = 0.13;
+
 const VERTEX_SETS = {
+  2: () => {
+    const verts = [];
+    for (let k = 0; k < COIN_SIDES; k++) {
+      const a = (k / COIN_SIDES) * Math.PI * 2;
+      verts.push([Math.cos(a), COIN_HALF_THICKNESS, Math.sin(a)], [Math.cos(a), -COIN_HALF_THICKNESS, Math.sin(a)]);
+    }
+    return verts;
+  },
   4: () => [[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]],
   6: () => signs(3),
   8: () => [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]],
@@ -123,7 +135,7 @@ const VERTEX_SETS = {
 };
 
 /** Circumradius of each die, in world units (a d6 edge is about 0.9). */
-const DIE_RADIUS = { 4: 0.95, 6: 0.8, 8: 0.85, 10: 0.82, 12: 0.85, 20: 0.88 };
+const DIE_RADIUS = { 2: 0.7, 4: 0.95, 6: 0.8, 8: 0.85, 10: 0.82, 12: 0.85, 20: 0.88 };
 
 /* ------------------------------------------------------------------ */
 /* Convex hull (brute force: the solids have at most 20 vertices)      */
@@ -251,7 +263,7 @@ function faceUp(kind, face, verts) {
 const cache = new Map();
 
 /**
- * @param {number} kind  4, 6, 8, 10, 12 or 20.
+ * @param {number} kind  2 (coin), 4, 6, 8, 10, 12 or 20.
  * @returns {{
  *   kind:number, radius:number, vertices:number[][], valueOn:"face"|"vertex",
  *   faces:{verts:number[], normal:number[], center:number[], value:number, up:number[], right:number[]}[],
@@ -268,7 +280,10 @@ export function getPolyhedron(kind) {
   const faces = hullFaces(vertices);
 
   let vertexValues = null;
-  if (kind === 4) {
+  if (kind === 2) {
+    // Heads (1) on top, tails (2) underneath; the rim faces carry no value (0).
+    for (const f of faces) f.value = f.normal[1] > 0.99 ? 1 : f.normal[1] < -0.99 ? 2 : 0;
+  } else if (kind === 4) {
     vertexValues = vertices.map((v, i) => i + 1);
     faces.forEach((f, i) => (f.value = i + 1));
   } else {
@@ -306,7 +321,7 @@ export function valueDirection(poly, value) {
 export function readTop(poly, localUp) {
   const candidates = poly.valueOn === "vertex"
     ? poly.vertices.map((v, i) => ({ value: poly.vertexValues[i], direction: v3.norm(v) }))
-    : poly.faces.map(f => ({ value: f.value, direction: f.normal }));
+    : poly.faces.filter(f => f.value > 0).map(f => ({ value: f.value, direction: f.normal }));
   let best = null;
   for (const c of candidates) {
     const alignment = v3.dot(c.direction, localUp);
