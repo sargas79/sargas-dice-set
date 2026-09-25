@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import * as CANNON from "cannon-es";
-import { simulateThrow, remapToResults } from "../src/engine/physics.js";
+import { simulateThrow, simulateThrowAsync, remapToResults } from "../src/engine/physics.js";
 import { getPolyhedron, readTop } from "../src/engine/polyhedra.js";
 
 function shownValues(dice, sim, remaps) {
@@ -20,6 +20,25 @@ describe("physics", () => {
     const b = simulateThrow({ dice, seed: "abc" });
     expect(a.frameCount).toBe(b.frameCount);
     a.frames.forEach((fr, i) => expect(Array.from(fr)).toEqual(Array.from(b.frames[i])));
+  });
+
+  it("the async simulation matches the synchronous one", async () => {
+    const dice = [{ kind: 12 }, { kind: 4 }];
+    const a = simulateThrow({ dice, seed: 42 });
+    const b = await simulateThrowAsync({ dice, seed: 42 }, 1);
+    expect(b.frameCount).toBe(a.frameCount);
+    expect(Array.from(b.frames[0])).toEqual(Array.from(a.frames[0]));
+  });
+
+  it("keeps big rolls inside the tray and settles them", () => {
+    const dice = Array.from({ length: 30 }, (_, i) => ({ kind: [6, 20, 8][i % 3] }));
+    const sim = simulateThrow({ dice, seed: 3 });
+    for (const fr of sim.frames) {
+      const o = (sim.frameCount - 1) * 7;
+      expect(Math.abs(fr[o])).toBeLessThan(11);
+      expect(Math.abs(fr[o + 2])).toBeLessThan(6.2);
+    }
+    expect(sim.frameCount).toBeLessThan(8 * 60);
   });
 
   it("different seeds give different throws", () => {

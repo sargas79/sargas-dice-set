@@ -24,7 +24,7 @@ Then enable **Sargas Dice Set** in your world. Don't run it at the same time as 
 
 ## Using it
 
-- **Rolls animate automatically:** chat commands (`/r 2d20kh`), sheet rolls, and anything posted with `Roll#toMessage`. The chat card waits until the dice stop (this can be turned off).
+- **Rolls animate automatically:** chat commands (`/r 2d20kh`), sheet rolls, anything posted with `Roll#toMessage`, and inline rolls written in chat text (`[[1d20]]`). The chat card waits until the dice stop (this can be turned off).
 - **Pick your style:** *Game Settings → Configure Settings → Sargas Dice Set → Choose dice styles.* Everyone at the table sees your dice in your style.
 - **Turn styles on or off (GM):** use the same menu. Each style has its own **Enabled in this world** flag, and players can only pick enabled styles. If a player's style is turned off, their dice switch to the first enabled style and they get a notification. If every style is off, no 3D dice are shown.
 - **Private and blind rolls:** GM-only (`/gmr`) and self (`/sr`) rolls only animate for the players who receive them. For blind rolls (`/br`), players who can't see the result get dice that land on a random face (or nothing, depending on a setting).
@@ -41,7 +41,8 @@ Then enable **Sargas Dice Set** in your world. Don't run it at the same time as 
 | Show other players' rolls | client | on |
 | Hold chat until dice stop | world | on |
 | Dice size | world | 1× |
-| Maximum dice per roll | world | 20 |
+| Maximum dice per roll (up to 30) | world | 20 |
+| Animate inline rolls | world | on |
 | Rolls you cannot see | world | show dice without the real result |
 
 ## API
@@ -66,7 +67,7 @@ Hooks: `sargasDiceInit(api)`, `sargasDiceRollStart({rolls, user, style, dice})`,
 ## How it works
 
 - **Renderer:** a transparent full-screen Three.js overlay that doesn't block clicks. It only renders while dice are moving.
-- **Physics:** cannon-es, seeded with the chat message id, so every client plays the same throw. The result is **never** decided by the physics. After the throw is simulated, the die mesh is turned by one of the solid's own symmetry rotations so that Foundry's rolled value ends up on top. The shape and its path don't change.
+- **Physics:** cannon-es, seeded with the chat message id, so every client plays the same throw. The simulation runs in small time slices, so big rolls don't freeze the page. The result is **never** decided by the physics. After the throw is simulated, the die mesh is turned by one of the solid's own symmetry rotations so that Foundry's rolled value ends up on top. The shape and its path don't change.
 - **Textures:** generated in code on first use: wood grain, cracks, concrete pitting, brushed steel, filigree, pips and numerals. The module ships no image files, and styles that are turned off are never generated.
 - **Sounds:** collision sounds are synthesised with WebAudio, varying by material (wood, glass, metal, stone and so on).
 

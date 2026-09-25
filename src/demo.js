@@ -1,7 +1,7 @@
 /**
  * Stand-alone preview page (no Foundry needed). Used for development and for
  * the screenshot checks in tools/screenshots.mjs.
- *   demo/index.html?mode=gallery            every style as a d6
+ *   demo/index.html?mode=gallery            every style as a d6 (&styles=a,b to filter, &size=px)
  *   demo/index.html?mode=kinds&style=<id>   one style on every die kind
  *   demo/index.html?mode=roll&style=<id>&dice=2d6,1d20&seed=1
  */
@@ -29,13 +29,14 @@ function tile(canvas, caption) {
 
 if (mode === "gallery") {
   const size = Number(params.get("size") ?? 256);
-  for (const s of getStyles()) tile(renderDie(s, { size, quality: "high" }), s.name);
+  const only = params.get("styles")?.split(",");
+  for (const s of getStyles()) if (!only || only.includes(s.id)) tile(renderDie(s, { size, quality: "high" }), s.name);
 } else if (mode === "kinds") {
   const style = getStyle(params.get("style")) ?? getStyles()[0];
   for (const kind of [4, 6, 8, 10, 12, 20]) tile(renderDie(style, { kind, size: 220, quality: "high", rotation: [0.35, -0.5, 0.1] }), `${style.name} d${kind}`);
   tile(renderDie(style, { kind: 10, size: 220, quality: "high", variant: "tens", rotation: [0.35, -0.5, 0.1] }), `${style.name} d100 tens`);
 } else if (mode === "roll") {
-  const box = new DiceBox({ settings: () => ({ quality: params.get("quality") ?? "high", volume: 0, fadeDelay: 1e9, speed: Number(params.get("speed") ?? 1) }) });
+  const box = new DiceBox({ settings: () => ({ quality: params.get("quality") ?? "high", volume: 0, fadeDelay: 1e9, speed: Number(params.get("speed") ?? 1), envRotation: params.get("env")?.split(",").map(Number) }) });
   const style = getStyle(params.get("style")) ?? getStyles()[0];
   const terms = (params.get("dice") ?? "2d6").split(",").map(t => {
     const [n, f] = t.split("d").map(Number);

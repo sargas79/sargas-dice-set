@@ -35,7 +35,9 @@ export class StyleConfig extends HandlebarsApplicationMixin(ApplicationV2) {
 
   /** Re-render any open instance (e.g. after the GM changes the flags). */
   static refreshOpen() {
-    for (const app of foundry.applications.instances.values()) if (app instanceof StyleConfig) app.render();
+    // v14 exposes ApplicationV2.instances(); v13 keeps a Map at foundry.applications.instances.
+    const apps = typeof ApplicationV2.instances === "function" ? ApplicationV2.instances() : foundry.applications.instances?.values?.() ?? [];
+    for (const app of apps) if (app instanceof StyleConfig && app.rendered) app.render();
   }
 
   async _prepareContext(options) {

@@ -61,14 +61,16 @@ globalThis.foundry = {
 };
 globalThis.ui = { notifications: { info: vi.fn(), warn: vi.fn() }, chat: {} };
 globalThis.document = { querySelectorAll: () => [] };
+globalThis.Roll = { fromData: data => ({ dice: data.terms }) };
 
 const term = (faces, ...results) => ({ faces, results: results.map(result => ({ result })) });
-function message({ id = "msg1", author = me, visible = true, dice = [term(20, 17)], sound = "sounds/dice.wav" } = {}) {
+function message({ id = "msg1", author = me, visible = true, dice = [term(20, 17)], sound = "sounds/dice.wav", content = "" } = {}) {
   return {
     id,
     author,
+    content,
     isContentVisible: visible,
-    rolls: [{ dice }],
+    rolls: dice.length ? [{ dice }] : [],
     sound,
     getFlag: () => undefined,
     updateSource(data) {
@@ -93,6 +95,7 @@ beforeEach(() => {
   settings.set("showOthers", true);
   settings.set("hiddenRolls", "ghost");
   settings.set("enabled", true);
+  settings.set("inlineRolls", true);
 });
 
 describe("Foundry integration", () => {
@@ -155,6 +158,16 @@ describe("Foundry integration", () => {
     settings.set("enabled", false);
     await fire("createChatMessage", message());
     expect(rolls).toHaveLength(0);
+  });
+
+  it("animates inline [[rolls]] from the message text", async () => {
+    const data = { terms: [term(8, 5)] };
+    const content = `<p>Damage <a class="inline-roll inline-result" data-roll="${escape(JSON.stringify(data))}">5</a></p>`;
+    await fire("createChatMessage", message({ dice: [], content }));
+    expect(rolls[0].dice.map(d => [d.kind, d.value])).toEqual([[8, 5]]);
+    settings.set("inlineRolls", false);
+    await fire("createChatMessage", message({ id: "msg3", dice: [], content }));
+    expect(rolls).toHaveLength(1);
   });
 
   it("replaces Foundry's roll sound with ours", async () => {

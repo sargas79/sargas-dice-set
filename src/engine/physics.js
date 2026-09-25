@@ -5,7 +5,11 @@ import { PHYSICS_HZ, TRAY } from "../constants.js";
 
 const GRAVITY = -70;
 const MAX_SECONDS = 8;
-const MAX_ATTEMPTS = 6;
+/** Re-throws allowed when a die ends up leaning; fewer for big rolls, which cost more to simulate. */
+const maxAttempts = n => (n <= 4 ? 6 : n <= 10 ? 3 : 1);
+/** Start slots per row along the throwing edge, and rows before stacking higher. */
+const SLOTS_PER_ROW = 6;
+const ROWS_PER_LAYER = 3;
 /** A die is "cocked" (leaning on another die or a wall) below this alignment. */
 const FLAT_ALIGNMENT = 0.95;
 const DEFAULT_PHYSICS = { mass: 1, friction: 0.35, restitution: 0.35 };
@@ -36,19 +40,47 @@ function hullShape(kind, scale) {
  * @returns {{frameCount:number, frames:Float32Array[], collisions:{frame:number,die:number,strength:number}[], tops:{value:number,direction:number[],alignment:number}[]}}
  */
 export function simulateThrow({ dice, seed, scale = 1 }) {
+  const steps = throwSteps(dice, seed, scale);
+  let r = steps.next();
+  while (!r.done) r = steps.next();
+  return r.value;
+}
+
+/**
+ * Same as simulateThrow, but yields to the browser every few milliseconds so
+ * big rolls don't freeze the page. The result is identical to simulateThrow.
+ * @param {object} opts  As simulateThrow.
+ * @param {number} [budgetMs=8]  Work per slice before yielding.
+ */
+export async function simulateThrowAsync({ dice, seed, scale = 1 }, budgetMs = 8) {
+  const steps = throwSteps(dice, seed, scale);
+  let r = steps.next();
+  let sliceStart = performance.now();
+  while (!r.done) {
+    if (performance.now() - sliceStart > budgetMs) {
+      await new Promise(resolve => setTimeout(resolve, 0));
+      sliceStart = performance.now();
+    }
+    r = steps.next();
+  }
+  return r.value;
+}
+
+/** Generator that yields between physics steps and returns the throw result. */
+function* throwSteps(dice, seed, scale) {
   const rng = createRng(seed);
   let result;
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    result = runOnce(dice, rng, scale);
+  for (let attempt = 0, max = maxAttempts(dice.length); attempt < max; attempt++) {
+    result = yield* runOnce(dice, rng, scale);
     if (result.tops.every(t => t.alignment >= FLAT_ALIGNMENT)) break;
   }
   return result;
 }
 
-function runOnce(dice, rng, scale) {
+function* runOnce(dice, rng, scale) {
   const world = new CANNON.World({ gravity: new CANNON.Vec3(0, GRAVITY, 0), allowSleep: true });
   world.solver.iterations = 14;
-  world.broadphase = new CANNON.NaiveBroadphase();
+  world.broadphase = new CANNON.SAPBroadphase(world);
 
   const tableMat = new CANNON.Material("table");
   const wallMat = new CANNON.Material("wall");
@@ -87,15 +119,21 @@ function runOnce(dice, rng, scale) {
     });
     body.addShape(hullShape(die.kind, scale));
 
-    const spread = (i - (n - 1) / 2) * 1.6 * scale + rng.range(-0.6, 0.6);
-    const edgeX = hw - 2, edgeZ = hd - 2;
+    // Start in a grid along the throwing edge (rows inward, then stacked layers) so big rolls stay inside the tray.
+    const gap = 1.8 * scale;
+    const col = i % SLOTS_PER_ROW, row = Math.floor(i / SLOTS_PER_ROW);
+    const inRow = Math.min(SLOTS_PER_ROW, n - row * SLOTS_PER_ROW);
+    const along = (col - (inRow - 1) / 2) * gap + rng.range(-0.3, 0.3);
+    const inward = (row % ROWS_PER_LAYER) * gap;
+    const layer = Math.floor(row / ROWS_PER_LAYER);
+    const edgeX = hw - 2 - inward, edgeZ = hd - 2 - inward;
     const start = [
-      [-edgeX, spread * 0.6],
-      [edgeX, spread * 0.6],
-      [spread, -edgeZ],
-      [spread, edgeZ]
+      [-edgeX, along],
+      [edgeX, along],
+      [along, -edgeZ],
+      [along, edgeZ]
     ][side];
-    body.position.set(start[0], rng.range(2.5, 4.5) * scale, start[1]);
+    body.position.set(start[0], (rng.range(2.5, 4) + layer * 2) * scale, start[1]);
     const target = new CANNON.Vec3(rng.range(-hw * 0.35, hw * 0.35), 0, rng.range(-hd * 0.35, hd * 0.35));
     const dir = target.vsub(body.position);
     dir.y = 0;
@@ -128,11 +166,16 @@ function runOnce(dice, rng, scale) {
     });
   };
   record();
+  let stillFrames = 0;
   while (frame < maxFrames) {
+    yield;
     world.step(1 / PHYSICS_HZ);
     frame++;
     record();
-    if (frame > 20 && bodies.every(b => b.sleepState === CANNON.Body.SLEEPING)) break;
+    // Settled once every die is asleep or barely moving for a short while (big piles can jitter forever).
+    const resting = bodies.every(b => b.sleepState === CANNON.Body.SLEEPING || (b.velocity.lengthSquared() < 0.05 && b.angularVelocity.lengthSquared() < 0.2));
+    stillFrames = resting ? stillFrames + 1 : 0;
+    if (frame > 20 && stillFrames >= 12) break;
   }
 
   const tops = bodies.map((b, i) => {

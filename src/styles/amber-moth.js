@@ -7,7 +7,7 @@ export default {
   label: "SARGAS.Style.AmberMoth",
   body: {
     color: "#e38d0c",
-    opacity: 0.66,
+    opacity: 0.52,
     roughness: 0.07,
     clearcoat: 1,
     clearcoatRoughness: 0.03,
