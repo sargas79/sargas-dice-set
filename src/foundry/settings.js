@@ -14,7 +14,8 @@ export const SETTINGS = {
   holdChat: "holdChat",
   diceScale: "diceScale",
   maxDice: "maxDice",
-  hiddenRolls: "hiddenRolls"
+  hiddenRolls: "hiddenRolls",
+  inlineRolls: "inlineRolls"
 };
 
 export const get = key => game.settings.get(MODULE_ID, key);
@@ -58,7 +59,8 @@ export function registerSettings() {
   reg(SETTINGS.showOthers, { scope: "client", config: true, type: Boolean, default: true });
   reg(SETTINGS.holdChat, { scope: "world", config: true, type: Boolean, default: true });
   reg(SETTINGS.diceScale, { scope: "world", config: true, type: Number, default: 1, range: { min: 0.6, max: 1.6, step: 0.1 } });
-  reg(SETTINGS.maxDice, { scope: "world", config: true, type: Number, default: 20, range: { min: 1, max: 50, step: 1 } });
+  reg(SETTINGS.maxDice, { scope: "world", config: true, type: Number, default: 20, range: { min: 1, max: 30, step: 1 } });
+  reg(SETTINGS.inlineRolls, { scope: "world", config: true, type: Boolean, default: true });
   reg(SETTINGS.hiddenRolls, {
     scope: "world",
     config: true,

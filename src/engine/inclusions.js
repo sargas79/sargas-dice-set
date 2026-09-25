@@ -68,9 +68,9 @@ function mothTexture() {
     }
     ctx.closePath();
     const g = ctx.createLinearGradient(0, -60, 100, 60);
-    g.addColorStop(0, "#6b4a2b");
-    g.addColorStop(0.5, "#8a6a45");
-    g.addColorStop(1, "#4a3220");
+    g.addColorStop(0, "#4a2f17");
+    g.addColorStop(0.5, "#6b4a28");
+    g.addColorStop(1, "#2e1d0e");
     ctx.fillStyle = g;
     ctx.fill();
     ctx.clip();
@@ -137,7 +137,7 @@ export function createInclusion(type, poly) {
   } else if (type === "moth") {
     const mat = new THREE.MeshStandardMaterial({ map: mothTexture(), roughness: 0.8, alphaTest: 0.5, side: THREE.DoubleSide });
     const m = new THREE.Mesh(new THREE.PlaneGeometry(r * 2.3, r * 2.3), mat);
-    m.rotation.set(-1.35, 0.25, 0.3);
+    m.rotation.set(-1.15, 0.25, 0.3);
     group.add(m);
   }
   group.traverse(o => {

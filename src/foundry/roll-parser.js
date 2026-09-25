@@ -34,3 +34,35 @@ export function expandDice(terms, { maxDice = Infinity, hidden = false } = {}) {
 export function termsFromRolls(rolls) {
   return (rolls ?? []).flatMap(roll => roll?.dice ?? []);
 }
+
+const HTML_ENTITIES = { "&quot;": '"', "&#34;": '"', "&amp;": "&", "&#39;": "'", "&lt;": "<", "&gt;": ">" };
+
+/**
+ * Serialised rolls embedded as inline results (`[[1d20]]`) in chat message HTML.
+ * Foundry stores each one in an anchor's data-roll attribute as escaped JSON.
+ * @param {string} html
+ * @param {{includePrivate?:boolean}} [opts]  Private inline rolls ([[/gmr ...]]) are skipped unless this is set.
+ * @returns {object[]} Roll data suitable for Roll.fromData.
+ */
+export function inlineRollData(html, { includePrivate = false } = {}) {
+  if (typeof html !== "string" || !html.includes("data-roll")) return [];
+  const out = [];
+  for (const tag of html.matchAll(/<a\b[^>]*\bdata-roll="([^"]+)"[^>]*>/g)) {
+    const cls = /\bclass="([^"]*)"/.exec(tag[0])?.[1] ?? "";
+    if (!includePrivate && /\bprivate\b/.test(cls)) continue;
+    const raw = tag[1].replace(/&(quot|#34|amp|#39|lt|gt);/g, e => HTML_ENTITIES[e]);
+    for (const decode of [s => s, globalThis.unescape, decodeURIComponent]) {
+      if (!decode) continue;
+      try {
+        const data = JSON.parse(decode(raw));
+        if (data && Array.isArray(data.terms)) {
+          out.push(data);
+          break;
+        }
+      } catch {
+        /* try the next decoding */
+      }
+    }
+  }
+  return out;
+}

@@ -4,7 +4,7 @@ import { getPolyhedron } from "./polyhedra.js";
 import { getDieGeometry } from "./geometry.js";
 import { getDieMaterial } from "./materials.js";
 import { createInclusion } from "./inclusions.js";
-import { simulateThrow, remapToResults } from "./physics.js";
+import { simulateThrowAsync, remapToResults } from "./physics.js";
 import { playImpact } from "./sound.js";
 import { PHYSICS_HZ, TRAY } from "../constants.js";
 
@@ -52,9 +52,9 @@ export class DiceBox {
     const pmrem = new THREE.PMREMGenerator(renderer);
     scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
     pmrem.dispose();
-  scene.environmentIntensity = 0.75;
-  // Tilt the studio environment so its ceiling light doesn't glare straight back at a top-down camera.
-  scene.environmentRotation.set(0.9, 0.4, 0);
+    scene.environmentIntensity = 0.75;
+    // Tilt the studio environment so its ceiling light doesn't glare straight back at a top-down camera.
+    scene.environmentRotation.set(...(s.envRotation ?? [Math.PI / 2, 0, 0]));
     this.scene = scene;
 
     const key = new THREE.DirectionalLight(0xffffff, 1.8);
@@ -104,11 +104,32 @@ export class DiceBox {
    * @returns {{settled: Promise<void>, done: Promise<void>}}  settled: dice stopped; done: dice removed.
    */
   roll({ dice, seed }) {
+    let resolveSettled, resolveDone;
+    const settled = new Promise(r => (resolveSettled = r));
+    const done = new Promise(r => (resolveDone = r));
+    this._throw(dice, seed, resolveSettled, resolveDone).catch(err => {
+      console.error("Sargas Dice | throw failed", err);
+      resolveSettled();
+      resolveDone();
+    });
+    return { settled, done };
+  }
+
+  async _throw(dice, seed, resolveSettled, resolveDone) {
+    // A background tab doesn't animate; skip straight to the result so chat isn't held up.
+    if (typeof document !== "undefined" && document.hidden) {
+      resolveSettled();
+      resolveDone();
+      return;
+    }
     this.ensure();
     const s = this.settings();
     const simDice = dice.map(d => ({ kind: d.kind, physics: d.style.physics }));
-    const sim = simulateThrow({ dice: simDice, seed, scale: s.scale });
+    const sim = await simulateThrowAsync({ dice: simDice, seed, scale: s.scale });
     const remaps = remapToResults(simDice, sim.tops, dice.map(d => d.value ?? null), seed);
+
+    // Dice from earlier rolls that have already stopped make room for the new throw.
+    for (const old of this.throws) if (old.settledAt !== null) old.fadeDelay = 0;
 
     const group = new THREE.Group();
     const meshes = dice.map((d, i) => {
@@ -125,7 +146,6 @@ export class DiceBox {
     });
     this.scene.add(group);
 
-    let resolveSettled, resolveDone;
     const t = {
       dice,
       sim,
@@ -137,15 +157,12 @@ export class DiceBox {
       start: performance.now(),
       lastFrame: -1,
       settledAt: null,
-      settled: new Promise(r => (resolveSettled = r)),
-      done: new Promise(r => (resolveDone = r))
+      resolveSettled,
+      resolveDone
     };
-    t.resolveSettled = resolveSettled;
-    t.resolveDone = resolveDone;
     this._apply(t, 0);
     this.throws.add(t);
     this._start();
-    return { settled: t.settled, done: t.done };
   }
 
   /** Remove all dice immediately. */

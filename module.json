@@ -2,7 +2,7 @@
   "id": "sargas-dice-set",
   "title": "Sargas Dice Set",
   "description": "Animated 3D dice for every roll, in fourteen hand-designed Sargas styles. GMs can turn each style on or off.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "compatibility": {
     "minimum": "14",
     "verified": "14"
@@ -18,7 +18,7 @@
   "socket": true,
   "url": "https://github.com/sargas79/sargas-dice-set",
   "manifest": "https://github.com/sargas79/sargas-dice-set/releases/latest/download/module.json",
-  "download": "https://github.com/sargas79/sargas-dice-set/releases/download/v0.1.0/module.zip",
+  "download": "https://github.com/sargas79/sargas-dice-set/releases/download/v0.1.1/module.zip",
   "bugs": "https://github.com/sargas79/sargas-dice-set/issues",
   "readme": "https://github.com/sargas79/sargas-dice-set/blob/main/README.md",
   "license": "https://github.com/sargas79/sargas-dice-set/blob/main/LICENSE"

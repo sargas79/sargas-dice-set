@@ -14,7 +14,7 @@ export default {
     emissive: true,
     paint(p, rng) {
       mottle(p, rng, { scale: 0.02, amount: 0.06, height: 0.03 });
-      sparkles(p, rng, { count: perArea(p, 260), glow: "#6f86c8", size: [0.4, 1.1] });
+      sparkles(p, rng, { count: perArea(p, 500), color: "#8fa3d8", glow: "#dfe8ff", size: [0.7, 1.8] });
     }
   },
   pips: { kind: "hole", color: "#1d3fa8", roughness: 0.15, size: 0.17, rim: "#142d7a" },

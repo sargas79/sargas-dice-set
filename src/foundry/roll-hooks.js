@@ -2,7 +2,7 @@ import { MODULE_ID, SOCKET_NAME } from "../constants.js";
 import { DiceBox } from "../engine/dice-box.js";
 import { randomSeed } from "../engine/rng.js";
 import { getStyle } from "../styles/registry.js";
-import { expandDice, termsFromRolls } from "./roll-parser.js";
+import { expandDice, termsFromRolls, inlineRollData } from "./roll-parser.js";
 import { SETTINGS, get, styleForUser } from "./settings.js";
 
 /** Chat messages waiting for their dice to stop before being shown. */
@@ -64,14 +64,38 @@ function reveal(messageId) {
   }
 }
 
+/** Rolls attached to a message, plus inline [[rolls]] from its text when enabled. */
+export function messageRolls(message) {
+  const rolls = [...(message?.rolls ?? [])];
+  if (get(SETTINGS.inlineRolls)) {
+    // Private inline rolls ([[/gmr 1d20]]) are only thrown for their author and the GM.
+    const includePrivate = game.user.isGM || message?.author?.id === game.user.id;
+    for (const data of inlineRollData(message?.content, { includePrivate })) {
+      try {
+        rolls.push(Roll.fromData(data));
+      } catch (err) {
+        console.warn(`${MODULE_ID} | could not read an inline roll`, err);
+      }
+    }
+  }
+  return rolls;
+}
+
 /** Should this client animate this chat message? */
 export function shouldAnimate(message) {
-  if (!message?.rolls?.length || !get(SETTINGS.enabled)) return false;
+  if (!get(SETTINGS.enabled)) return false;
+  const rolls = messageRolls(message);
+  if (!rolls.length) return false;
   if (message.getFlag?.(MODULE_ID, "skip")) return false;
   const author = message.author;
   if (author && author.id !== game.user.id && !get(SETTINGS.showOthers)) return false;
-  if (!message.isContentVisible && get(SETTINGS.hiddenRolls) === "none") return false;
-  return expandDice(termsFromRolls(message.rolls)).length > 0;
+  if (!contentVisible(message) && get(SETTINGS.hiddenRolls) === "none") return false;
+  return expandDice(termsFromRolls(rolls)).length > 0;
+}
+
+/** Whether the viewer may see this message's results (v14 visibility modes are covered by isContentVisible). */
+function contentVisible(message) {
+  return message.isContentVisible ?? message.visible ?? true;
 }
 
 async function onCreateChatMessage(message) {
@@ -85,7 +109,7 @@ async function onCreateChatMessage(message) {
     setTimeout(() => reveal(message.id), MAX_HOLD_MS);
   }
   // The message id is the seed, so every client plays the same throw.
-  await throwRolls(message.rolls, { user: author, hidden: !message.isContentVisible, seed: message.id });
+  await throwRolls(messageRolls(message), { user: author, hidden: !contentVisible(message), seed: message.id });
   if (hold) reveal(message.id);
 }
 

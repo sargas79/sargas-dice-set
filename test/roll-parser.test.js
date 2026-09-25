@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { expandDice, termsFromRolls } from "../src/foundry/roll-parser.js";
+import { expandDice, termsFromRolls, inlineRollData } from "../src/foundry/roll-parser.js";
 import { faceLabel } from "../src/engine/textures/faces.js";
 
 const term = (faces, ...results) => ({ faces, results: results.map(result => ({ result })) });
@@ -41,5 +41,32 @@ describe("expandDice", () => {
 
   it("collects dice from rolls", () => {
     expect(termsFromRolls([{ dice: [1, 2] }, { dice: [3] }, null])).toEqual([1, 2, 3]);
+  });
+});
+
+describe("inlineRollData", () => {
+  const roll = { class: "Roll", formula: "1d20", terms: [{ class: "Die", faces: 20, results: [{ result: 12, active: true }] }] };
+
+  it("reads escape()-encoded roll data from inline results", () => {
+    const html = `<p>Hit: <a class="inline-roll inline-result" data-roll="${escape(JSON.stringify(roll))}">12</a></p>`;
+    expect(inlineRollData(html)).toEqual([roll]);
+  });
+
+  it("reads URI- and entity-encoded roll data", () => {
+    const uri = `<a class="inline-roll" data-roll="${encodeURIComponent(JSON.stringify(roll))}">12</a>`;
+    const entities = `<a class="inline-roll" data-roll="${JSON.stringify(roll).replace(/"/g, "&quot;")}">12</a>`;
+    expect(inlineRollData(uri + entities)).toEqual([roll, roll]);
+  });
+
+  it("skips private inline rolls unless asked for them", () => {
+    const html = `<a class="inline-roll inline-result private" data-roll="${escape(JSON.stringify(roll))}">?</a>`;
+    expect(inlineRollData(html)).toEqual([]);
+    expect(inlineRollData(html, { includePrivate: true })).toEqual([roll]);
+  });
+
+  it("ignores text without inline rolls and broken data", () => {
+    expect(inlineRollData("<p>No rolls here</p>")).toEqual([]);
+    expect(inlineRollData('<a data-roll="%7Bbroken">x</a>')).toEqual([]);
+    expect(inlineRollData(undefined)).toEqual([]);
   });
 });
