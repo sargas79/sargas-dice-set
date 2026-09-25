@@ -67,7 +67,8 @@ export function getDieMaterial(style, kind, { quality = "medium", variant, aniso
     material.emissiveIntensity = style.pips.emissiveIntensity ?? 1;
   }
   material.userData.painter = painter;
-  cache.set(key, material);
+  // Face artwork still loading: use this material now, but build a fresh one next time.
+  if (painter.complete !== false) cache.set(key, material);
   return material;
 }
 

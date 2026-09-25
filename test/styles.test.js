@@ -73,3 +73,37 @@ describe("built-in styles", () => {
     expect(validateStyle({ ...base, roundness: 0.9 })).toContain("roundness must be between 0.05 and 0.6");
   });
 });
+
+describe("Oracle design artwork", async () => {
+  const { designFaceSvg, DESIGN_FINISHES } = await import("../src/styles/oracle-design.js");
+  const { ORACLE_STYLES } = await import("../src/styles/oracle.js");
+
+  it("fills in the design's face markup for every finish and value", () => {
+    for (const key of Object.keys(DESIGN_FINISHES)) {
+      for (let v = 1; v <= 6; v++) {
+        const svg = designFaceSvg(key, v, 256);
+        expect(svg.startsWith('<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 100 100">')).toBe(true);
+        expect(svg.endsWith("</svg>")).toBe(true);
+        // Six pip slots, each with rim, gradient pip and highlight; unused slots sit off-face with r=0.
+        expect(svg.match(/<circle /g)).toHaveLength(18);
+        expect(svg.match(/r="0"/g)?.length ?? 0).toBe((6 - v) * 3);
+        expect(svg).toContain(`stop-color="${DESIGN_FINISHES[key].body1}"`);
+        expect(svg).toContain(`d="${DESIGN_FINISHES[key].pattern}"`);
+      }
+    }
+  });
+
+  it("uses the design's exact values", () => {
+    const brass = designFaceSvg("brass", 1);
+    expect(brass).toContain('rx="13"');
+    expect(brass).toContain('stroke-width="7"');
+    expect(brass).toContain('<rect x="3.5" y="3.5" width="93" height="93" rx="9.5"');
+    expect(brass).toContain('<circle cx="50" cy="50" r="6.6" fill="url(#d-brass-1-pip)"/>');
+    expect(designFaceSvg("resin", 2)).toContain('<feGaussianBlur stdDeviation="3.2"/>');
+    expect(designFaceSvg("sigil", 3)).toContain("M50 15 L80.3 67.5 L19.7 67.5 Z");
+  });
+
+  it("gives every Oracle style its face artwork", () => {
+    for (const s of ORACLE_STYLES) expect(s.faceSvg(4, 128)).toBe(designFaceSvg(s.id.replace("oracle-", ""), 4, 128));
+  });
+});

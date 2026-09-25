@@ -12,7 +12,7 @@ Animated 3D dice for **Foundry VTT v14**. Every roll made by any game system is 
 
 ### Oracle finishes
 
-Six finishes from the Archive Dice design, with rounded corners and art-deco detailing: **Brass Ward** (gloss black, bevelled brass frame, emerald pips), **Midnight Ledger** (matte navy, engraved diamond linework, brass pips), **Specimen Resin** (smoked resin holding a glowing green bloom, brass pips), **Containment Steel** (gunmetal, sunken inner panel, teal pips), **Archivist** (matte charcoal, gilt deco border, ivory pips) and **Sigil** (black lacquer, gilt ward circle, teal gem pips). Gem pips and the resin bloom glow softly.
+Six finishes from the Archive Dice design, with rounded corners and art-deco detailing: **Brass Ward** (gloss black, bevelled brass frame, emerald pips), **Midnight Ledger** (matte navy, engraved diamond linework, brass pips), **Specimen Resin** (smoked resin holding a glowing green bloom, brass pips), **Containment Steel** (gunmetal, sunken inner panel, teal pips), **Archivist** (matte charcoal, gilt deco border, ivory pips) and **Sigil** (black lacquer, gilt ward circle, teal gem pips). Gem pips and the resin bloom glow softly. Each d6 face is the design's own vector artwork, rasterised as the texture, so the dice match the design exactly; relief, metal and glow layers traced from the same shapes add the 3D lighting on top.
 
 ![The six Oracle finishes](docs/oracle.png)
 

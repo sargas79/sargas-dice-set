@@ -3,6 +3,7 @@
  * the screenshot checks in tools/screenshots.mjs.
  *   demo/index.html?mode=gallery            every style as a d6 (&styles=a,b to filter, &size=px)
  *   demo/index.html?mode=kinds&style=<id>   one style on every die kind
+ *   demo/index.html?mode=faces              design SVG vs painted texture for styles with face artwork
  *   demo/index.html?mode=roll&style=<id>&dice=2d6,1d20,1dF,1dc&seed=1   (&hidden=1, &fit=0, &quality=low)
  * After a roll settles, window.rollResult = {expected, shown} holds the requested and rendered values.
  */
@@ -10,8 +11,11 @@ import { DiceBox } from "./engine/dice-box.js";
 import { renderDie } from "./engine/thumbnail.js";
 import { registerBuiltinStyles, getStyles, getStyle } from "./styles/index.js";
 import { expandDice } from "./foundry/roll-parser.js";
+import { preloadStyles } from "./engine/textures/face-images.js";
 
 registerBuiltinStyles();
+// Styles with SVG face artwork (Oracle) load it before anything is drawn.
+await preloadStyles(getStyles());
 const params = new URLSearchParams(location.search);
 const mode = params.get("mode") ?? "gallery";
 const root = document.getElementById("root");
@@ -41,6 +45,42 @@ if (mode === "gallery") {
   tile(renderDie(style, { kind: 6, size: 220, quality: "high", variant: "d3", rotation }), `${style.name} d3`);
   tile(renderDie(style, { kind: 2, size: 220, quality: "high", variant: "coin", rotation: [0.9, 0, 0.1] }), `${style.name} coin`);
   tile(renderDie(style, { kind: 20, size: 220, quality: "high", variant: "hidden", rotation }), `${style.name} hidden`);
+} else if (mode === "faces") {
+  // Face artwork check: the design's SVG next to the d6 colour texture the engine paints.
+  const { getPolyhedron } = await import("./engine/polyhedra.js");
+  const { getLayout } = await import("./engine/layout.js");
+  const { paintAtlas } = await import("./engine/textures/faces.js");
+  const { faceImage } = await import("./engine/textures/face-images.js");
+  const poly = getPolyhedron(6), layout = getLayout(poly), cellPx = 256;
+  const report = [];
+  for (const style of getStyles().filter(s => s.faceSvg)) {
+    const atlas = paintAtlas(style, poly, cellPx).canvases.color;
+    for (const lf of layout.faces) {
+      const [c, r] = layout.cellOrigin(lf.cell);
+      const half = (cellPx * layout.fit) / 2; // the full face square spans the cell's fitted area
+      const x = c * cellPx + cellPx / 2 - half, y = r * cellPx + cellPx / 2 - half;
+      const size = Math.round(half * 2);
+      const mine = document.createElement("canvas");
+      mine.width = mine.height = size;
+      mine.getContext("2d").drawImage(atlas, x, y, half * 2, half * 2, 0, 0, size, size);
+      const ref = document.createElement("canvas");
+      ref.width = ref.height = size;
+      ref.getContext("2d").drawImage(faceImage(style, lf.value), 0, 0, size, size);
+      // Compare only where the design face is opaque (its rounded corners are transparent).
+      const a = mine.getContext("2d").getImageData(0, 0, size, size).data;
+      const b = ref.getContext("2d").getImageData(0, 0, size, size).data;
+      let sum = 0, n = 0;
+      for (let i = 0; i < a.length; i += 4) {
+        if (b[i + 3] < 255) continue;
+        sum += Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]);
+        n += 3;
+      }
+      report.push({ style: style.id, value: lf.value, meanDiff: +(sum / n).toFixed(3) });
+      tile(ref, `${style.name} ${lf.value} · design`);
+      tile(mine, `${style.name} ${lf.value} · texture`);
+    }
+  }
+  window.facesReport = report;
 } else if (mode === "roll") {
   const box = new DiceBox({
     settings: () => ({

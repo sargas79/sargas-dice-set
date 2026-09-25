@@ -16,6 +16,7 @@ Browser smoke test in CI (`npm run smoke`, headless Chrome with WebGL):
 - Throws 15 dice of every kind through the real renderer and checks the value on top of every die matches the roll, with the tray fitted to the screen and with the fixed 16:9 tray.
 - Drops the WebGL context on purpose and checks the next roll rebuilds the renderer and still shows the right values.
 - With "reduce motion" emulated, no dice are drawn.
+- Compares every Oracle d6 face texture with the design's SVG face, pixel by pixel (36 faces; only resampling noise allowed).
 - Screenshots are uploaded as a CI artifact.
 
 Manual checks before tagging a release, in a v14 world with the dnd5e system and one GM plus at least one player client:

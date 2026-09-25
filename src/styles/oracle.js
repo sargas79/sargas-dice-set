@@ -1,85 +1,33 @@
 import { mottle, insetPath } from "./helpers.js";
+import { DESIGN_FINISHES, DESIGN_PIP_LAYOUTS, designFaceSvg } from "./oracle-design.js";
 
 /**
  * "Oracle" collection: six finishes ported from the Archive Dice design
  * (Brass Ward, Midnight Ledger, Specimen Resin, Containment Steel, Archivist,
- * Sigil). d6 faces are drawn from the design's 100×100 vector face: body
- * gradient, glow, panel, engraved pattern, frame and gem-like pips, using its
- * exact colours and paths. Other dice kinds reuse the finish's body, border
- * and pip colours with numerals.
+ * Sigil). The colour of every d6 face is the design's own SVG face
+ * (oracle-design.js), rasterised as the texture, so it matches the design
+ * exactly. The same shapes are also drawn into the relief, metalness and glow
+ * layers, so frames and gilt shine, panels sink and gem pips glow under the
+ * 3D lighting. Other dice kinds reuse the finish's body, border and pip
+ * colours with numerals.
  */
 
-/** Stepped art-deco corner marks (Archivist). */
-function decoCorners(o, s) {
-  const a = o, b = 100 - o;
-  return `M${a} ${a + s * 2} H${a + s} V${a + s} H${a + s * 2} V${a}` +
-    ` M${b} ${a + s * 2} H${b - s} V${a + s} H${b - s * 2} V${a}` +
-    ` M${a} ${b - s * 2} H${a + s} V${b - s} H${a + s * 2} V${b}` +
-    ` M${b} ${b - s * 2} H${b - s} V${b - s} H${b - s * 2} V${b}`;
-}
-
-function circlePath(r) {
-  return `M50 ${50 - r} A${r} ${r} 0 1 0 50 ${50 + r} A${r} ${r} 0 1 0 50 ${50 - r} Z`;
-}
-
-function wardTicks() {
-  let d = "";
-  for (let i = 0; i < 24; i++) {
-    const t = (i / 24) * Math.PI * 2;
-    const r1 = i % 2 ? 37.5 : 36, r2 = 40;
-    d += ` M${(50 + Math.cos(t) * r1).toFixed(2)} ${(50 + Math.sin(t) * r1).toFixed(2)} L${(50 + Math.cos(t) * r2).toFixed(2)} ${(50 + Math.sin(t) * r2).toFixed(2)}`;
-  }
-  return d;
-}
-
-const BASE = {
-  radius: 12, frame1: "#000", frame2: "#000", frame3: "#000", frameWidth: 0, frameInset: 0,
-  glow: null, glowOpacity: 0, swirl: null, swirlOpacity: 0,
-  panelInset: 0, panelRx: 0, panelFill: null, panelStroke: null, panelWidth: 0,
-  pattern: null, patternColor: null, patternWidth: 0, pipR: 7, pipShine: 0.4
-};
-
-/** Face artwork, straight from the design (100×100 units, y down). */
-const FACES = {
-  brass: { ...BASE, body1: "#1d2020", body2: "#040505", radius: 13,
-    frame1: "#6b4f1f", frame2: "#e8cb82", frame3: "#5a4118", frameWidth: 7, frameInset: 3.5,
-    rim: "#c9a55a", pip1: "#3fe3ad", pip2: "#08463a", pipR: 6.6, pipShine: 0.55 },
-  ledger: { ...BASE, body1: "#223254", body2: "#0f1829",
-    frame1: "#0a111f", frame2: "#2b3c5e", frame3: "#0a111f", frameWidth: 2, frameInset: 1,
-    panelInset: 7, panelRx: 6, panelStroke: "#475c86", panelWidth: 0.8,
-    pattern: "M50 13 L87 50 L50 87 L13 50 Z M50 19 L81 50 L50 81 L19 50 Z M7 7 L17 17 M93 7 L83 17 M7 93 L17 83 M93 93 L83 83",
-    patternColor: "#475c86", patternWidth: 0.8,
-    rim: "#3a2f14", pip1: "#f0d488", pip2: "#8a6a2c", pipR: 6.2, pipShine: 0.25 },
-  resin: { ...BASE, body1: "#2c3431", body2: "#070a09", radius: 20,
-    glow: "#1fbf88", glowOpacity: 0.7,
-    swirl: "M20 72 C30 38 66 82 80 34 M28 28 C44 50 58 26 74 62", swirlOpacity: 0.55,
-    rim: "#5b4518", pip1: "#f2d17e", pip2: "#8d6b2d", pipR: 7.4, pipShine: 0.45 },
-  steel: { ...BASE, body1: "#5a6066", body2: "#1b1e21",
-    frame1: "#9aa1a7", frame2: "#3a3f44", frame3: "#15181a", frameWidth: 2, frameInset: 1,
-    panelInset: 12, panelRx: 8, panelFill: "#2a2e32", panelStroke: "#0c0e10", panelWidth: 2.4,
-    pattern: "M5 6.5 A1.5 1.5 0 1 0 8 6.5 A1.5 1.5 0 1 0 5 6.5 Z M92 6.5 A1.5 1.5 0 1 0 95 6.5 A1.5 1.5 0 1 0 92 6.5 Z M5 93.5 A1.5 1.5 0 1 0 8 93.5 A1.5 1.5 0 1 0 5 93.5 Z M92 93.5 A1.5 1.5 0 1 0 95 93.5 A1.5 1.5 0 1 0 92 93.5 Z",
-    patternColor: "#0c0e10", patternWidth: 1,
-    rim: "#07090a", pip1: "#39e0bc", pip2: "#05372d", pipR: 6.8, pipShine: 0.35 },
-  archivist: { ...BASE, body1: "#2a2b2a", body2: "#121313",
-    pattern: `M8 8 H92 V92 H8 Z M12 12 H88 V88 H12 Z ${decoCorners(12, 4.5)} M8 8 L12 12 M92 8 L88 12 M8 92 L12 88 M92 92 L88 88`,
-    patternColor: "#c9a24f", patternWidth: 0.9,
-    rim: "#8f8468", pip1: "#f4ecd6", pip2: "#b9ab8b", pipR: 7, pipShine: 0.2 },
-  sigil: { ...BASE, body1: "#17181b", body2: "#030304",
-    pattern: `${circlePath(40)} ${circlePath(35)} ${circlePath(11)} M50 15 L85 50 L50 85 L15 50 Z M25.25 25.25 L74.75 25.25 L74.75 74.75 L25.25 74.75 Z M50 15 L80.3 67.5 L19.7 67.5 Z${wardTicks()}`,
-    patternColor: "#caa75a", patternWidth: 0.75,
-    rim: "#caa75a", pip1: "#5ff0df", pip2: "#07615a", pipR: 5.8, pipShine: 0.6 }
-};
-
-/** Pip positions from the design (face units). */
-const A = 28, B = 72, C = 50;
-const LAYOUT = {
-  1: [[C, C]],
-  2: [[A, A], [B, B]],
-  3: [[A, A], [C, C], [B, B]],
-  4: [[A, A], [B, A], [A, B], [B, B]],
-  5: [[A, A], [B, A], [C, C], [A, B], [B, B]],
-  6: [[A, 26], [B, 26], [A, C], [B, C], [A, 74], [B, 74]]
-};
+/**
+ * The design's finish data, with its "nothing here" placeholders ('none',
+ * 'M0 0', zero opacity) turned into nulls for the relief/metal/glow layers.
+ */
+const FACES = Object.fromEntries(
+  Object.entries(DESIGN_FINISHES).map(([key, d]) => [key, {
+    ...d,
+    glow: d.glowOpacity > 0 ? d.glow : null,
+    swirl: d.swirlOpacity > 0 ? d.swirl : null,
+    panelFill: d.panelFill === "none" ? null : d.panelFill,
+    panelStroke: d.panelStroke === "none" ? null : d.panelStroke,
+    pattern: d.pattern === "M0 0" ? null : d.pattern,
+    patternColor: d.patternColor === "none" ? null : d.patternColor
+  }])
+);
+const LAYOUT = DESIGN_PIP_LAYOUTS;
 
 /**
  * How each finish behaves as a physical material. `gilt` marks metallic
@@ -263,6 +211,8 @@ function oracleStyle(fin) {
     shape: "rounded",
     roundness: +(f.radius / 50).toFixed(2),
     emissive: !!(fin.gem || f.glow),
+    /** The design's face artwork for a d6 value, as an SVG document. */
+    faceSvg: (value, size) => designFaceSvg(fin.key, value, size),
     body: {
       color: f.body2,
       ...fin.body,
