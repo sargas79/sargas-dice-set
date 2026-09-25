@@ -16,7 +16,7 @@ Browser smoke test in CI (`npm run smoke`, headless Chrome with WebGL):
 - Throws 15 dice of every kind through the real renderer and checks the value on top of every die matches the roll, with the tray fitted to the screen and with the fixed 16:9 tray.
 - Drops the WebGL context on purpose and checks the next roll rebuilds the renderer and still shows the right values.
 - With "reduce motion" emulated, no dice are drawn.
-- Compares every Oracle d6 face texture with the design's SVG face, pixel by pixel (36 faces; only resampling noise allowed).
+- Compares every Oracle d6 face texture with the design's SVG face, pixel by pixel (6 faces per finish; only resampling noise allowed), and checks the bundled Cormorant SC number font is loaded.
 - Screenshots are uploaded as a CI artifact.
 
 Manual checks before tagging a release, in a v14 world with the dnd5e system and one GM plus at least one player client:
@@ -31,7 +31,8 @@ Manual checks before tagging a release, in a v14 world with the dnd5e system and
 - [ ] Chat card is held until the dice stop, and shows immediately with "Hold chat" turned off.
 - [ ] Style menu: thumbnails render grouped into Sargas and Classic, **Preview** throws dice, a player can only pick enabled styles.
 - [ ] The dice button appears in the token controls and next to the chat controls, opens the style menu, and disappears when "Show dice style button" is off (after reload).
-- [ ] Oracle finishes roll with their face artwork (brass frame, diamond linework, green bloom, steel panel, deco border, ward circle) and glowing gem pips.
+- [ ] Oracle finishes roll with their face artwork (brass frame, diamond linework, green bloom, steel panel, deco border, ward circle, Drowned Idol tentacles and eye pips) and glowing gem pips.
+- [ ] Oracle d4–d100 show the design's numbers in Cormorant SC (not a fallback serif), metal bevel edges, and 6./9. dots on d10, d12 and d20.
 - [ ] Classic sets roll as small rounded d6s; other dice kinds (d20 etc.) use the set's colour with white numbers.
 - [ ] GM turns off a player's style → that player's next roll uses the first enabled style on every client, and the player gets a notification.
 - [ ] GM turns off every style → no 3D dice, and chat cards are not held.

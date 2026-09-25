@@ -1,15 +1,16 @@
-import { mottle, insetPath } from "./helpers.js";
-import { DESIGN_FINISHES, DESIGN_PIP_LAYOUTS, designFaceSvg } from "./oracle-design.js";
+import { mottle, insetPath, mix } from "./helpers.js";
+import { DESIGN_FINISHES, DESIGN_PIP_LAYOUTS, DESIGN_POLY_FINISHES, DESIGN_NUMBER_FONT, designFaceSvg, designPolyLabel } from "./oracle-design.js";
 
 /**
- * "Oracle" collection: six finishes ported from the Archive Dice design
+ * "Oracle" collection: seven finishes ported from the Archive Dice design
  * (Brass Ward, Midnight Ledger, Specimen Resin, Containment Steel, Archivist,
- * Sigil). The colour of every d6 face is the design's own SVG face
- * (oracle-design.js), rasterised as the texture, so it matches the design
+ * Sigil, Drowned Idol). The colour of every d6 face is the design's own SVG
+ * face (oracle-design.js), rasterised as the texture, so it matches the design
  * exactly. The same shapes are also drawn into the relief, metalness and glow
  * layers, so frames and gilt shine, panels sink and gem pips glow under the
- * 3D lighting. Other dice kinds reuse the finish's body, border and pip
- * colours with numerals.
+ * 3D lighting. The d4-d100 follow the design's polyhedral set: body gradient,
+ * edge metal on the bevels, inset border, glow, the Sigil ring and numbers in
+ * Cormorant SC with the finish's fill and outline.
  */
 
 /**
@@ -45,8 +46,14 @@ const FINISHES = [
   { key: "archivist", name: "Archivist", label: "Archivist", sound: "stone",
     body: { roughness: 0.78 }, gilt: true },
   { key: "sigil", name: "Sigil", label: "Sigil", sound: "ceramic",
-    body: { roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.04 }, gilt: true, gem: true }
+    body: { roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.04 }, gilt: true, gem: true },
+  { key: "drowned", name: "Drowned Idol", label: "DrownedIdol", sound: "stone",
+    body: { roughness: 0.55, clearcoat: 0.3, clearcoatRoughness: 0.35 }, gem: true, frameMetal: true, bloom: true }
 ];
+
+/** Bevel edges that are metal in the design's polyhedral set (brass, gilt, steel, verdigris bronze). */
+const METAL_EDGES = new Set(["brass", "steel", "archivist", "sigil", "drowned"]);
+const POLY_TYPE = { 4: "d4", 8: "d8", 10: "d10", 12: "d12", 20: "d20" };
 
 /* ------------------------------------------------------------------ */
 /* Drawing                                                            */
@@ -171,6 +178,14 @@ function drawPip(p, face, f, fin, x, y) {
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
   });
+  if (f.slitOn) {
+    // Drowned Idol: slit pupils, which stay dark in the glow layer.
+    inDesign(p, face, { color: "#081006", emissive: "#000000", height: 0.36, opacity: f.slitOn }, ctx => {
+      ctx.beginPath();
+      ctx.ellipse(x, y, r * 0.2, r * 0.78, 0, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
   inDesign(p, face, { color: "#ffffff", opacity: f.pipShine * 0.6 }, ctx => {
     ctx.beginPath();
     ctx.arc(x - r * 0.32, y - r * 0.34, r * 0.3, 0, Math.PI * 2);
@@ -178,31 +193,91 @@ function drawPip(p, face, f, fin, x, y) {
   });
 }
 
-/** Border and glow for non-d6 faces, echoing the finish. */
-function decorateOtherFace(p, face, f, fin) {
-  if (f.glow) {
-    const r = face.inradius * 1.1;
-    const g = ctx => {
-      const grad = ctx.createRadialGradient(face.cx, face.cy, 0, face.cx, face.cy, r);
-      grad.addColorStop(0, withAlpha(f.glow, 0.8));
-      grad.addColorStop(1, withAlpha(f.glow, 0));
-      return grad;
+/* ------------------------------------------------------------------ */
+/* Polyhedral faces (the design's Poly component)                      */
+/* ------------------------------------------------------------------ */
+
+/** Face circumradius in px, and px per design unit (the design draws each die ~94 units wide). */
+function faceScale(face) {
+  const R = Math.max(...face.polygon.map(([x, y]) => Math.hypot(x - face.cx, y - face.cy)));
+  return { R, k: R / 30 };
+}
+
+/** Body gradient, glow, inset border and edge metal of one polyhedral face. */
+function drawPolyFace(p, face, pf, fin) {
+  const { R, k } = faceScale(face);
+  const x0 = face.cx - R, y0 = face.cy - R;
+  const body = ctx => {
+    const g = ctx.createLinearGradient(x0, y0, x0 + 2 * R, y0 + 2 * R);
+    g.addColorStop(0, pf.body1);
+    g.addColorStop(1, pf.body2);
+    return g;
+  };
+  p.fillRect(face.cell.x, face.cell.y, face.cell.w, face.cell.h, { color: body });
+
+  if (pf.glowOpacity > 0) {
+    // Glow on the face, clipped to it, also lighting the emissive layer.
+    const glow = ctx => {
+      const g = ctx.createRadialGradient(face.cx, face.cy, 0, face.cx, face.cy, R * 0.78);
+      g.addColorStop(0, withAlpha(pf.glow, 0.95));
+      g.addColorStop(0.6, withAlpha(pf.glow, 0.3));
+      g.addColorStop(1, withAlpha(pf.glow, 0));
+      return g;
     };
-    p.disc(face.cx, face.cy, r, { color: g, emissive: g, opacity: f.glowOpacity });
+    p.clip(face.path, () => p.fillPath(c => c.ellipse(face.cx, face.cy, R * 0.78, R * 0.74, 0, 0, Math.PI * 2), { color: glow, emissive: glow, opacity: pf.glowOpacity }));
   }
-  if (f.panelFill) p.fillPath(insetPath(face, 0.78), { color: f.panelFill, height: 0.38 });
-  const border = fin.gilt ? f.patternColor : f.frameWidth > 3 ? f.frame2 : f.panelStroke ?? f.patternColor;
-  if (border) {
-    p.strokePath(insetPath(face, 0.86), Math.max(1.5, face.unit * (f.frameWidth > 3 ? 0.05 : 0.022)), {
-      color: border,
-      height: 0.58,
-      ...(fin.gilt || fin.frameMetal ? { metal: 1, rough: 0.28 } : {})
+  if (pf.insetOn) {
+    p.strokePath(insetPath(face, 0.78), Math.max(1, 0.8 * k), { color: pf.insetColor, height: 0.42, ...(METAL_EDGES.has(fin.key) ? { metal: 1, rough: 0.3 } : {}) });
+  }
+  // The design strokes every facet with the edge colour; here it runs along the face border.
+  p.strokePath(face.path, Math.max(1, pf.edgeW * k), { color: pf.edge, height: 0.56, ...(METAL_EDGES.has(fin.key) ? { metal: 1, rough: 0.28 } : {}) });
+}
+
+/** A number in the design's font, fill and outline (the outline is painted first, like paint-order: stroke). */
+function drawPolyNumber(p, pf, fin, text, x, y, size, rot, ringMax) {
+  const font = `${DESIGN_NUMBER_FONT.weight} ${Math.round(size)}px "${DESIGN_NUMBER_FONT.family}", Georgia, serif`;
+  p.transform(x, y, rot, () => {
+    if (ringMax) {
+      // Sigil: two rings round the number (0.78 and 0.9 of the font size), kept inside the face.
+      const fit = Math.min(1, ringMax / (size * 0.9));
+      for (const [rr, w] of [[0.78, 0.8], [0.9, 0.5]]) {
+        p.strokePath(c => c.arc(0, 0, size * rr * fit, 0, Math.PI * 2), Math.max(1, (size * w) / 20), { color: pf.edge, height: 0.56, metal: 1, rough: 0.3 });
+      }
+    }
+    const text2 = (surface, stroke) => p.apply(surface, ctx => {
+      ctx.font = font;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      if (stroke) {
+        ctx.lineWidth = stroke;
+        ctx.lineJoin = "round";
+        ctx.strokeText(text, 0, size * 0.03);
+      } else ctx.fillText(text, 0, size * 0.03);
     });
+    if (pf.numStroke !== "none" && pf.numStrokeW > 0) text2({ color: pf.numStroke, height: 0.44 }, (size * pf.numStrokeW) / 10);
+    text2({ color: pf.num, height: 0.4, rough: 0.35, ...(fin.gem ? { emissive: withAlpha(pf.num, 0.55) } : {}) });
+  });
+}
+
+/** Numbers on d4-d20 faces (and the d100 tens die), laid out like the default numerals. */
+function drawPolyMarks(p, face, pf, fin) {
+  const type = face.variant === "tens" ? "d100" : POLY_TYPE[face.kind];
+  if (face.vertexLabels) {
+    for (const { label, px } of face.vertexLabels) {
+      const dx = px[0] - face.cx, dy = px[1] - face.cy;
+      drawPolyNumber(p, pf, fin, label, face.cx + dx * 0.52, face.cy + dy * 0.52, face.inradius * 0.7, Math.atan2(dx, -dy), 0);
+    }
+    return;
   }
+  const label = face.variant === "hidden" ? "?" : face.variant === "tens" ? designPolyLabel("d100", (face.value % 10) * 10) : designPolyLabel(type, face.kind === 10 && face.value === 10 ? 0 : face.value);
+  const size = face.inradius * (face.kind === 10 ? 1.2 : face.kind === 20 ? 1.2 : face.kind === 8 ? 1.25 : 1.3);
+  const yOff = face.kind === 10 ? face.inradius * 0.2 : face.kind === 20 ? face.inradius * 0.12 : face.kind === 8 ? face.inradius * 0.1 : 0;
+  drawPolyNumber(p, pf, fin, label, face.cx, face.cy + yOff, size, 0, pf.ringOn > 0 ? face.inradius * 0.9 - Math.abs(yOff) : 0);
 }
 
 function oracleStyle(fin) {
   const f = FACES[fin.key];
+  const pf = DESIGN_POLY_FINISHES[fin.key];
   return {
     id: `oracle-${fin.key}`,
     name: fin.name,
@@ -224,16 +299,31 @@ function oracleStyle(fin) {
     },
     pips: { kind: fin.metalPips ? "cup" : fin.gem ? "glow" : "paint", color: f.pip1, emissive: fin.gem ? f.pip2 : undefined, emissiveIntensity: 0.9 },
     numerals: { kind: fin.metalPips ? "paint" : fin.gem ? "glow" : "paint", color: f.pip1, metal: fin.metalPips, emissive: fin.gem ? f.pip2 : undefined, roughness: 0.3 },
+    fonts: [DESIGN_NUMBER_FONT],
     decorateFace(p, face) {
-      if (face.kind === 6 && face.variant !== "hidden") drawFaceArt(p, face, f, fin);
-      else decorateOtherFace(p, face, f, fin);
+      if (face.kind === 6) drawFaceArt(p, face, f, fin);
+      else if (POLY_TYPE[face.kind]) drawPolyFace(p, face, pf, fin);
     },
     drawMarks(p, face) {
-      // d6 (and d3, which reuses the d6) pips follow the design's layout; everything else uses numerals.
-      if (face.kind !== 6 || (face.variant && face.variant !== "d3")) return false;
-      const count = face.variant === "d3" ? ((face.value - 1) % 3) + 1 : face.value;
-      for (const [x, y] of LAYOUT[count]) drawPip(p, face, f, fin, x, y);
-      return true;
+      // d6 (and d3, which reuses the d6) pips follow the design's face layout.
+      if (face.kind === 6 && (!face.variant || face.variant === "d3")) {
+        const count = face.variant === "d3" ? ((face.value - 1) % 3) + 1 : face.value;
+        for (const [x, y] of LAYOUT[count]) drawPip(p, face, f, fin, x, y);
+        return true;
+      }
+      // d4-d20 and the d100 dice use the design's polyhedral numbers; coins and Fate/"?" d6s use the defaults.
+      if (POLY_TYPE[face.kind]) {
+        drawPolyMarks(p, face, pf, fin);
+        return true;
+      }
+      return false;
+    },
+    decorateBody(p, cell, rng, ctx) {
+      // The bevels between polyhedral faces carry the design's edge colour: metal where the design's
+      // edges are metal; thin painted lines (Ledger, Resin) only tint the body so the bands don't overpower.
+      if (ctx.poly.kind === 6 || !POLY_TYPE[ctx.poly.kind]) return;
+      const metal = METAL_EDGES.has(fin.key);
+      p.fillRect(cell.x, cell.y, cell.w, cell.h, { color: metal ? pf.edge : mix(pf.body2, pf.edge, 0.35), rough: metal ? 0.3 : 0.6, ...(metal ? { metal: 1 } : {}) });
     },
     physics: fin.physics ?? { mass: 1, friction: 0.33, restitution: 0.35 },
     sound: fin.sound

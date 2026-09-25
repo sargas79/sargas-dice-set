@@ -116,7 +116,7 @@ describe("Foundry integration", () => {
     expect(registered.get("enabledStyles").scope).toBe("world");
     expect(game.settings.registerMenu).toHaveBeenCalled();
     expect(hooks.has("createChatMessage")).toBe(true);
-    expect(moduleEntry.api.getStyles()).toHaveLength(28);
+    expect(moduleEntry.api.getStyles()).toHaveLength(29);
     expect(game.socket.on).toHaveBeenCalledWith(`module.${MODULE}`, expect.any(Function));
   });
 

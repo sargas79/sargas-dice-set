@@ -4,8 +4,11 @@ import { registerSettings, warnIfFallback } from "./foundry/settings.js";
 import { registerRollHooks, registerSocket, show, preview, getBox } from "./foundry/roll-hooks.js";
 import { StyleConfig } from "./foundry/style-config.js";
 import { registerButtons } from "./foundry/buttons.js";
+import { setAssetBase } from "./engine/assets.js";
 
 Hooks.once("init", () => {
+  // Fonts and other files ship inside the module folder.
+  setAssetBase(foundry.utils.getRoute?.(`modules/${MODULE_ID}/`) ?? `modules/${MODULE_ID}/`);
   registerBuiltinStyles();
   registerSettings();
   registerRollHooks();

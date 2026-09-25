@@ -34,11 +34,37 @@ const base = {
   glow: "#000", glowOpacity: 0, swirl: "M0 0", swirlOpacity: 0,
   panelInset: 0, panelRx: 0, panelFill: "none", panelStroke: "none", panelWidth: 0,
   pattern: "M0 0", patternColor: "none", patternWidth: 0, patternOpacity: 1,
-  gloss: 0, pipR: 7, pipShine: 0.4
+  gloss: 0, pipR: 7, pipShine: 0.4, slitOn: 0
 };
+
+/** Rotate every point of an SVG path by quarter turns about the face centre (design helper). */
+function rot(d, turns) {
+  const toks = d.match(/[A-Za-z]|-?[0-9.]+/g), out = [];
+  let nums = [];
+  toks.forEach(t => {
+    if (/[A-Za-z]/.test(t)) { out.push(t); return; }
+    nums.push(Number(t));
+    if (nums.length === 2) {
+      let x = nums[0], y = nums[1];
+      for (let k = 0; k < turns; k++) { const nx = 100 - y; y = x; x = nx; }
+      out.push(x.toFixed(2) + " " + y.toFixed(2)); nums = [];
+    }
+  });
+  return out.join(" ");
+}
+
+const tentacle = "M3 38 C14 33 23 25 23 15 C23 8 17 6 14 9 C11 12 14 16 17 14 M8 35 L8.6 33.6 M13 32.4 L13.4 31 M17.4 28.6 L17.8 27.2";
+const tentacles = [0, 1, 2, 3].map(t => rot(tentacle, t)).join(" ");
 
 /** Finish data, verbatim from the design. */
 export const DESIGN_FINISHES = {
+  drowned: { ...base,
+    body1: "#1c3a33", body2: "#030c0a", radius: 14,
+    frame1: "#1f3d33", frame2: "#7fb89a", frame3: "#16302a", frameWidth: 3, frameInset: 1.5,
+    glow: "#2e8f6b", glowOpacity: 0.35,
+    pattern: tentacles, patternColor: "#4f9e80", patternWidth: 1.2, patternOpacity: 0.85,
+    rim: "#1a2b20", pip1: "#d6f47a", pip2: "#3d6a1c", pipR: 7.2, pipShine: 0.35, slitOn: 1, gloss: 0.05
+  },
   brass: { ...base,
     body1: "#1d2020", body2: "#040505", radius: 13,
     frame1: "#6b4f1f", frame2: "#e8cb82", frame3: "#5a4118", frameWidth: 7, frameInset: 3.5,
@@ -106,8 +132,8 @@ function faceVals(key, value) {
   const pips = [];
   for (let i = 0; i < 6; i++) {
     const p = DESIGN_PIP_LAYOUTS[v][i];
-    if (p) pips.push({ x: p[0], y: p[1], r, rimR: r + 1.5, hx: p[0] - r * 0.32, hy: p[1] - r * 0.34, hr: r * 0.3 });
-    else pips.push({ x: -10, y: -10, r: 0, rimR: 0, hx: -10, hy: -10, hr: 0 });
+    if (p) pips.push({ x: p[0], y: p[1], r, rimR: r + 1.5, hx: p[0] - r * 0.32, hy: p[1] - r * 0.34, hr: r * 0.3, sx: r * 0.2, sy: r * 0.78 });
+    else pips.push({ x: -10, y: -10, r: 0, rimR: 0, hx: -10, hy: -10, hr: 0, sx: 0, sy: 0 });
   }
   return { f, uid: "d-" + key + "-" + v, pips };
 }
@@ -124,6 +150,7 @@ export function designFaceSvg(key, value, size = 512) {
   const pipMarkup = pips.map(p =>
     `<circle cx="${p.x}" cy="${p.y}" r="${p.rimR}" fill="${f.rim}"/>` +
     `<circle cx="${p.x}" cy="${p.y}" r="${p.r}" fill="url(#${uid}-pip)"/>` +
+    `<ellipse cx="${p.x}" cy="${p.y}" rx="${p.sx}" ry="${p.sy}" fill="#081006" opacity="${f.slitOn}"/>` +
     `<circle cx="${p.hx}" cy="${p.hy}" r="${p.hr}" fill="#ffffff" opacity="${f.pipShine}"/>`
   ).join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">` +
@@ -143,4 +170,43 @@ export function designFaceSvg(key, value, size = 512) {
     `<path d="M9 30 Q9 9 30 9 L64 9 Q30 16 9 52 Z" fill="#ffffff" opacity="${f.gloss}"/>` +
     pipMarkup +
     `</svg>`;
+}
+
+/* ------------------------------------------------------------------ */
+/* Polyhedral set (Poly.dc.html)                                       */
+/* ------------------------------------------------------------------ */
+
+const polyBase = { glow: "#000000", glowOpacity: 0, insetColor: "#000000", insetOn: 0, ringOn: 0,
+  outlineW: 1.6, outlineColor: "#000000", outlineFrame: false, numStroke: "none", numStrokeW: 0 };
+
+/** Polyhedral (d4-d100) styling per finish, verbatim from the design. */
+export const DESIGN_POLY_FINISHES = Object.fromEntries(Object.entries({
+  brass: { body1: "#2a2e2e", body2: "#040505", edge: "#c9a55a", edgeW: 1.3, outlineFrame: true, outlineW: 4,
+    num: "#3fe3ad", numStroke: "#6b4f1f", numStrokeW: 1.2 },
+  ledger: { body1: "#2a3c63", body2: "#0f1829", edge: "#5a70a0", edgeW: 0.8, outlineColor: "#0a111f", outlineW: 2,
+    insetColor: "#5a70a0", insetOn: 1, num: "#f0d488", numStroke: "#3a2f14", numStrokeW: 0.8 },
+  resin: { body1: "#35403c", body2: "#070a09", edge: "#4c5a54", edgeW: 0.6, outlineColor: "#0b0f0e", outlineW: 1.5,
+    glow: "#1fbf88", glowOpacity: 0.75, num: "#f2d17e", numStroke: "#5b4518", numStrokeW: 0.8 },
+  steel: { body1: "#6a7177", body2: "#1b1e21", edge: "#a3aab0", edgeW: 0.8, outlineColor: "#0c0e10", outlineW: 2.2,
+    num: "#39e0bc", numStroke: "#07090a", numStrokeW: 1.4 },
+  archivist: { body1: "#303130", body2: "#121313", edge: "#c9a24f", edgeW: 0.9, outlineColor: "#c9a24f", outlineW: 1.6,
+    insetColor: "#c9a24f", insetOn: 1, num: "#f4ecd6", numStroke: "none", numStrokeW: 0 },
+  drowned: { body1: "#23483f", body2: "#030c0a", edge: "#5fa488", edgeW: 0.9, outlineColor: "#2c5a4a", outlineW: 2.2,
+    glow: "#2e8f6b", glowOpacity: 0.45, num: "#d6f47a", numStroke: "#10200f", numStrokeW: 1.2 },
+  sigil: { body1: "#1d1e22", body2: "#030304", edge: "#caa75a", edgeW: 0.8, outlineColor: "#caa75a", outlineW: 1.4,
+    ringOn: 1, num: "#5ff0df", numStroke: "#07615a", numStrokeW: 0.6 }
+}).map(([k, v]) => [k, { ...polyBase, ...v }]));
+
+/** Number font of the polyhedral set. */
+export const DESIGN_NUMBER_FONT = { family: "Cormorant SC", weight: 700, file: "fonts/CormorantSC-Bold.woff2" };
+
+/**
+ * The design's number text: d100 pads to two digits, and 6 and 9 get a dot on
+ * the d10, d12 and d20 so they read the right way up.
+ * @param {"d4"|"d8"|"d10"|"d12"|"d20"|"d100"} type
+ */
+export function designPolyLabel(type, value) {
+  let label = type === "d100" ? String(value).padStart(2, "0") : String(value);
+  if ((label === "6" || label === "9") && type !== "d4" && type !== "d8") label += ".";
+  return label;
 }
