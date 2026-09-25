@@ -26,10 +26,15 @@ try {
   await load("mode=faces");
   const faces = await page.evaluate(() => window.facesReport);
   const worst = Math.max(...faces.map(r => r.meanDiff));
-  const facesOk = faces.length === 36 && worst < 4;
+  const oracleCount = await page.evaluate(() => window.oracleStyleCount);
+  const facesOk = faces.length === oracleCount * 6 && oracleCount >= 7 && worst < 4;
   console.log(`${facesOk ? "ok  " : "FAIL"} oracle face artwork: ${faces.length} faces, worst mean colour difference ${worst} / 255`);
   if (!facesOk) failures.push(`Oracle textures differ from the design (worst ${worst}, ${faces.length} faces)`);
   await shot("oracle-faces");
+  // The design's number font ships with the module and must be loaded before numbers are painted.
+  const fontOk = await page.evaluate(() => document.fonts.check('700 20px "Cormorant SC"'));
+  console.log(`${fontOk ? "ok  " : "FAIL"} Cormorant SC number font loaded`);
+  if (!fontOk) failures.push("the Cormorant SC font was not loaded");
 
   const dice = "2d6,1d20,1d100,1d4,1d8,1d10,1d12,2dF,2dc,1d3,1d2";
   const rolls = [
@@ -39,7 +44,8 @@ try {
     ["obsidian-gold", 4, "1"],
     ["classic-red", 5, "1"],
     ["oracle-sigil", 6, "1"],
-    ["oracle-resin", 7, "0"]
+    ["oracle-resin", 7, "0"],
+    ["oracle-drowned", 8, "1"]
   ];
   for (const [style, seed, fit] of rolls) {
     await load(`mode=roll&style=${style}&dice=${dice}&seed=${seed}&speed=4&quality=low&fit=${fit}`);

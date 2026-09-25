@@ -12,7 +12,9 @@ import { renderDie } from "./engine/thumbnail.js";
 import { registerBuiltinStyles, getStyles, getStyle } from "./styles/index.js";
 import { expandDice } from "./foundry/roll-parser.js";
 import { preloadStyles } from "./engine/textures/face-images.js";
+import { setAssetBase } from "./engine/assets.js";
 
+setAssetBase("../");
 registerBuiltinStyles();
 // Styles with SVG face artwork (Oracle) load it before anything is drawn.
 await preloadStyles(getStyles());
@@ -81,6 +83,7 @@ if (mode === "gallery") {
     }
   }
   window.facesReport = report;
+  window.oracleStyleCount = getStyles().filter(s => s.faceSvg).length;
 } else if (mode === "roll") {
   const box = new DiceBox({
     settings: () => ({

@@ -1,6 +1,6 @@
 # Sargas Dice Set
 
-Animated 3D dice for **Foundry VTT v14**. Every roll made by any game system is thrown on screen in one of fourteen hand-designed Sargas styles, six Oracle finishes or eight Classic acrylic sets, and lands on the real result. GMs can turn each style on or off for their world.
+Animated 3D dice for **Foundry VTT v14**. Every roll made by any game system is thrown on screen in one of fourteen hand-designed Sargas styles, seven Oracle finishes or eight Classic acrylic sets, and lands on the real result. GMs can turn each style on or off for their world.
 
 ![The fourteen Sargas dice styles](docs/styles.png)
 
@@ -12,9 +12,11 @@ Animated 3D dice for **Foundry VTT v14**. Every roll made by any game system is 
 
 ### Oracle finishes
 
-Six finishes from the Archive Dice design, with rounded corners and art-deco detailing: **Brass Ward** (gloss black, bevelled brass frame, emerald pips), **Midnight Ledger** (matte navy, engraved diamond linework, brass pips), **Specimen Resin** (smoked resin holding a glowing green bloom, brass pips), **Containment Steel** (gunmetal, sunken inner panel, teal pips), **Archivist** (matte charcoal, gilt deco border, ivory pips) and **Sigil** (black lacquer, gilt ward circle, teal gem pips). Gem pips and the resin bloom glow softly. Each d6 face is the design's own vector artwork, rasterised as the texture, so the dice match the design exactly; relief, metal and glow layers traced from the same shapes add the 3D lighting on top.
+Seven finishes from the Archive Dice design, with rounded corners and art-deco detailing: **Brass Ward** (gloss black, bevelled brass frame, emerald pips), **Midnight Ledger** (matte navy, engraved diamond linework, brass pips), **Specimen Resin** (smoked resin holding a glowing green bloom, brass pips), **Containment Steel** (gunmetal, sunken inner panel, teal pips), **Archivist** (matte charcoal, gilt deco border, ivory pips), **Sigil** (black lacquer, gilt ward circle, teal gem pips) and **Drowned Idol** (deep-sea green stone in verdigris bronze, tentacles curling in from every corner, pips that stare back as slit-pupiled eyes). Gem pips and the resin bloom glow softly. Each d6 face is the design's own vector artwork, rasterised as the texture, so the dice match the design exactly; relief, metal and glow layers traced from the same shapes add the 3D lighting on top. The d4–d100 follow the design's polyhedral set: the finish's body gradient, edge metal on the bevels, inset border, glow, the Sigil ring, and numbers in Cormorant SC (bundled, SIL Open Font License) with the finish's colour and outline; 6 and 9 get a dot on the d10, d12 and d20.
 
-![The six Oracle finishes](docs/oracle.png)
+![The seven Oracle finishes](docs/oracle.png)
+
+![Drowned Idol on every die kind](docs/oracle-drowned-set.png)
 
 ### Classic acrylic sets
 
