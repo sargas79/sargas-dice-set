@@ -17,7 +17,7 @@ const shot = async name => page.screenshot({ path: path.join(outDir, `${name}.pn
 try {
   await load("mode=gallery&size=160");
   await shot("gallery");
-  for (const style of ["vintage-bone", "smoke-glass", "oil-slick"]) {
+  for (const style of ["vintage-bone", "smoke-glass", "oil-slick", "spiral-lana", "spiral-anaria"]) {
     await load(`mode=kinds&style=${style}`);
     await shot(`kinds-${style}`);
   }
@@ -35,6 +35,10 @@ try {
   const fontOk = await page.evaluate(() => document.fonts.check('700 20px "Cormorant SC"'));
   console.log(`${fontOk ? "ok  " : "FAIL"} Cormorant SC number font loaded`);
   if (!fontOk) failures.push("the Cormorant SC font was not loaded");
+  // The Spiral Set's dragon mark ships as a PNG and must be loaded before its faces are painted.
+  const assetsOk = await page.evaluate(() => window.assetsReady === true);
+  console.log(`${assetsOk ? "ok  " : "FAIL"} style image files (Spiral dragon mark) loaded`);
+  if (!assetsOk) failures.push("a style's image files were not loaded");
 
   const dice = "2d6,1d20,1d100,1d4,1d8,1d10,1d12,2dF,2dc,1d3,1d2";
   const rolls = [
@@ -45,7 +49,9 @@ try {
     ["classic-red", 5, "1"],
     ["oracle-sigil", 6, "1"],
     ["oracle-resin", 7, "0"],
-    ["oracle-drowned", 8, "1"]
+    ["oracle-drowned", 8, "1"],
+    ["spiral-lana", 9, "1"],
+    ["spiral-wroan", 10, "0"]
   ];
   for (const [style, seed, fit] of rolls) {
     await load(`mode=roll&style=${style}&dice=${dice}&seed=${seed}&speed=4&quality=low&fit=${fit}`);
