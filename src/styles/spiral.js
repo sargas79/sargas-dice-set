@@ -64,9 +64,11 @@ function spiralStyle(set) {
       const cx = p.ctx.color, gx = set.glow ? p.ctx.emissive : null;
       const px = face.cell.w * SIZE[kind], scale = face.cell.w / DESIGN_CELL;
       const opts = { ...drawOpts, scale };
+      // The dragon needs its image; without it (still loading, or missing) the face shows its number instead of nothing.
+      let symbol = true;
       if (set.sym === "dragon") {
         const img = styleImage(this, DRAGON_MARK.key);
-        if (img) dragonMaskFrom(img, createCanvas);
+        if (img) dragonMaskFrom(img, createCanvas); else symbol = false;
       }
       const hidden = face.variant === "hidden";
       if (face.vertexLabels) {
@@ -75,12 +77,12 @@ function spiralStyle(set) {
           const [vx, vy] = face.fullPolygon[j];
           const dx = vx - face.cx, dy = vy - face.cy, rot = Math.atan2(dx, -dy);
           const x = face.cx + dx * .56, y = face.cy + dy * .56;
-          if (!hidden && v === "4") drawSymbol(cx, set, x, y, px * .55, rot, gx, opts); else text(cx, set, v, x, y, px, rot);
+          if (!hidden && symbol && v === "4") drawSymbol(cx, set, x, y, px * .55, rot, gx, opts); else text(cx, set, v, x, y, px, rot);
         });
         return true;
       }
       const max = kind === 100 ? 10 : kind;
-      if (!hidden && (!face.variant || face.variant === "tens") && face.value === max) {
+      if (!hidden && symbol && (!face.variant || face.variant === "tens") && face.value === max) {
         drawSymbol(cx, set, face.cx, face.cy, px * SYMBOL_SIZE(kind), 0, gx, opts);
         return true;
       }

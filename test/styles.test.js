@@ -202,5 +202,10 @@ describe("Spiral Set design", async () => {
     }
     expect(calls).toContain("strokeText");
     expect(calls).toContain("fillText");
+    // Without its image (not loaded, or missing), Lana's dragon faces show their number rather than nothing.
+    calls.length = 0;
+    expect(SPIRAL_STYLES[0].drawMarks(p, face(20, 20))).toBe(true);
+    expect(calls).toContain("fillText");
+    expect(calls).not.toContain("drawImage");
   });
 });

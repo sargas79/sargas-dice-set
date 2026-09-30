@@ -12,6 +12,8 @@ import { assetUrl } from "../assets.js";
 const SIZE = 512;
 const images = new Map();
 const pending = new Map();
+/** Image files that failed to load: nothing more to wait for, the style paints without them. */
+const failed = new Set();
 
 const key = (style, value) => `${style.id}:${value}`;
 const imageKey = (style, k) => `${style.id}:image:${k}`;
@@ -52,7 +54,12 @@ export function preloadStyle(style) {
   if (pending.has(style.id)) return pending.get(style.id);
   const job = Promise.all([
     ...(style.fonts ?? []).map(loadFont),
-    ...(style.images ?? []).map(({ key: k, file }) => loadFile(file).then(img => images.set(imageKey(style, k), img))),
+    ...(style.images ?? []).map(({ key: k, file }) =>
+      loadFile(file).then(img => images.set(imageKey(style, k), img)).catch(err => {
+        failed.add(imageKey(style, k));
+        console.warn(`Sargas Dice | could not load ${file} for ${style.id}`, err);
+      })
+    ),
     ...(style.faceSvg ? [1, 2, 3, 4, 5, 6] : []).map(value =>
       loadImage(style.faceSvg(value, SIZE)).then(img => images.set(key(style, value), img))
     )
@@ -81,5 +88,5 @@ export function styleImage(style, k) {
 /** False while a style that has face artwork or image files is still loading them. */
 export function faceImagesReady(style) {
   if (style?.faceSvg && ![1, 2, 3, 4, 5, 6].every(v => images.has(key(style, v)))) return false;
-  return (style?.images ?? []).every(({ key: k }) => images.has(imageKey(style, k)));
+  return (style?.images ?? []).every(({ key: k }) => images.has(imageKey(style, k)) || failed.has(imageKey(style, k)));
 }
