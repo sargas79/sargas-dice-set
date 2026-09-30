@@ -120,11 +120,17 @@
       "OracleContainmentSteel": "Containment Steel",
       "OracleArchivist": "Archivist",
       "OracleSigil": "Sigil",
-      "OracleDrownedIdol": "Drowned Idol"
+      "OracleDrownedIdol": "Drowned Idol",
+      "SpiralLana": "Lana",
+      "SpiralAnaria": "Anaria",
+      "SpiralEbdal": "Ebdal",
+      "SpiralWroan": "Wroan",
+      "SpiralKairon": "Kairon"
     },
     "Collection": {
       "sargas": "Collezione Sargas",
       "oracle": "Collezione Oracle",
+      "spiral": "Set Spiral",
       "classic": "Acrilico classico (piccoli)",
       "other": "Altri"
     },

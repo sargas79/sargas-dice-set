@@ -1,6 +1,6 @@
 # Sargas Dice Set
 
-Animated 3D dice for **Foundry VTT v14**. Every roll made by any game system is thrown on screen in one of fourteen hand-designed Sargas styles, seven Oracle finishes or eight Classic acrylic sets, and lands on the real result. GMs can turn each style on or off for their world.
+Animated 3D dice for **Foundry VTT v14**. Every roll made by any game system is thrown on screen in one of fourteen hand-designed Sargas styles, seven Oracle finishes, five Spiral Set character sets or eight Classic acrylic sets, and lands on the real result. GMs can turn each style on or off for their world.
 
 ![The fourteen Sargas dice styles](docs/styles.png)
 
@@ -17,6 +17,14 @@ Seven finishes from the Archive Dice design, with rounded corners and art-deco d
 ![The seven Oracle finishes](docs/oracle.png)
 
 ![Drowned Idol on every die kind](docs/oracle-drowned-set.png)
+
+### Spiral Set
+
+Five character sets from the Spiral Set design, each a polished metal die with silver inlaid bevels: **Lana** (electric blue, a dragon), **Anaria** (radiant purple, an arcane sigil with red gem nodes), **Ebdal** (sunfire orange, crossed axes), **Wroan** (black and white, a shield) and **Kairon** (tidewater teal, waves). The body is the design's gradient with faint log-spiral streaks, the "spiral" in Spiral Set. Numbers are in Cormorant SC, outlined in the set's edge colour and engraved into the surface; the highest face of every die (and the 4 of the d4, the 00 of the d100) carries the character's symbol instead. Lana's, Anaria's and Kairon's symbols glow. The dragon is cut from the design's own PNG (`assets/dragon-mark.png`), the one image texture the module ships; everything else is painted by the design's own drawing code (`src/styles/spiral-design.js`), so the textures match it.
+
+![The five Spiral Set character sets](docs/spiral.png)
+
+![Lana on every die kind](docs/spiral-lana-set.png)
 
 ### Classic acrylic sets
 
@@ -39,7 +47,7 @@ Then enable **Sargas Dice Set** in your world. Don't run it at the same time as 
 ## Using it
 
 - **Rolls animate automatically:** chat commands (`/r 2d20kh`), sheet rolls, anything posted with `Roll#toMessage`, and inline rolls written in chat text (`[[1d20]]`). The chat card waits until the dice stop (this can be turned off).
-- **Pick your style:** click the **dice button** in the token controls (left toolbar) or next to the chat controls, or go to *Game Settings → Configure Settings → Sargas Dice Set → Choose dice styles.* Styles are grouped into the Sargas, Oracle and Classic collections. Everyone at the table sees your dice in your style.
+- **Pick your style:** click the **dice button** in the token controls (left toolbar) or next to the chat controls, or go to *Game Settings → Configure Settings → Sargas Dice Set → Choose dice styles.* Styles are grouped into the Sargas, Oracle, Spiral and Classic collections. Everyone at the table sees your dice in your style.
 - **Turn styles on or off (GM):** use the same menu. Each style has its own **Enabled in this world** flag, and players can only pick enabled styles. If a player's style is turned off, their dice switch to the first enabled style and they get a notification. If every style is off, no 3D dice are shown.
 - **Private and blind rolls:** GM-only (`/gmr`) and self (`/sr`) rolls only animate for the players who receive them. For blind rolls (`/br`), players who can't see the result get dice with "?" on every face (or nothing, depending on a setting).
 - **Reduced motion:** if your operating system asks apps to reduce motion, no dice are animated (a setting can override this).
@@ -86,7 +94,7 @@ Hooks: `sargasDiceInit(api)`, `sargasDiceRollStart({rolls, user, style, dice})`,
 
 - **Renderer:** a transparent full-screen Three.js overlay that doesn't block clicks. It only renders while dice are moving.
 - **Physics:** cannon-es, seeded with the chat message id. With "Fit dice area to screen" off, every client plays exactly the same throw; with it on (the default), the tray follows each screen's shape, so throws differ slightly between screens but always land on the same result. The simulation runs in small time slices, so big rolls don't freeze the page. The result is **never** decided by the physics. After the throw is simulated, the die mesh is turned by one of the solid's own symmetry rotations so that Foundry's rolled value ends up on top. The shape and its path don't change.
-- **Textures:** generated in code on first use: wood grain, cracks, concrete pitting, brushed steel, filigree, pips and numerals. The module ships no image files, and styles that are turned off are never generated.
+- **Textures:** generated in code on first use: wood grain, cracks, concrete pitting, brushed steel, filigree, pips and numerals. The only image file the module ships is the Spiral Set's dragon mark, and styles that are turned off are never generated.
 - **Sounds:** collision sounds are synthesised with WebAudio, varying by material (wood, glass, metal, stone and so on).
 - **Resilience:** if the GPU drops the WebGL context (sleep, driver reset), the renderer is rebuilt on the next roll.
 - **Languages:** English, Deutsch, Français, Español, Italiano and Português (Brasil).
@@ -102,6 +110,7 @@ npm run watch       # rebuild on change
 npm run demo        # builds the standalone preview at demo/index.html
 node tools/screenshots.mjs out "mode=gallery"            # headless screenshots
 node tools/screenshots.mjs out "mode=kinds&style=walnut" # one style on every die kind
+node tools/screenshots.mjs out "mode=kinds&style=spiral-lana&top=1" # ...with every die's highest face (the symbol) to the camera
 ```
 
 To develop inside Foundry, clone or link this repository into `Data/modules/sargas-dice-set` and run `npm run build`. The manual release checklist is in [docs/TESTING.md](docs/TESTING.md).

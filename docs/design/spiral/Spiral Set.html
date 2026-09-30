@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spiral Set — polyhedral dice</title>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.184.0/build/three.module.js",
+    "three/addons/controls/OrbitControls.js": "https://unpkg.com/three@0.184.0/examples/jsm/controls/OrbitControls.js",
+    "three/addons/exporters/OBJExporter.js": "https://unpkg.com/three@0.184.0/examples/jsm/exporters/OBJExporter.js",
+    "three/addons/exporters/GLTFExporter.js": "https://unpkg.com/three@0.184.0/examples/jsm/exporters/GLTFExporter.js"
+  },
+  "integrity": {
+    "https://unpkg.com/three@0.184.0/build/three.module.js": "sha384-8FCZ1eVO6it4+pbec2aDtnTrwjWXZLJRC+MAGCIPDgsYnUrl/E0A2YlF8ioMKI/J",
+    "https://unpkg.com/three@0.184.0/build/three.core.js": "sha384-dw2ooPewaEIrAgl6oFDBmmBWCE9oW9LxRGcfwZ0hLvEprzo202wXl7vCYHRlSnOT",
+    "https://unpkg.com/three@0.184.0/examples/jsm/controls/OrbitControls.js": "sha384-4rziNxOBZKQ69i+w+f89KJ55TCYquwchVbByQwmaOeIOXdOU2PLDn3kOfXHwIJC9",
+    "https://unpkg.com/three@0.184.0/examples/jsm/exporters/OBJExporter.js": "sha384-nbwtoZENJD3Vq+ACK0CuGQdPMuDWHkamC2KJD70EV5nfg6jQjfppKOea07YJN+N3",
+    "https://unpkg.com/three@0.184.0/examples/jsm/exporters/GLTFExporter.js": "sha384-VofkvpG6HERhFCYbsUOHeNXBCqID2nfqkQqnVzE1jc/oPcz+qJ13ADdXH08hE+cQ"
+  }
+}
+</script>
+<style>
+  @font-face { font-family: "Cormorant SC"; src: url("fonts/CormorantSC-Bold.woff2") format("woff2"); font-weight: 700; }
+  html, body { margin: 0; background: #16171b; color: #eceae4; overflow: hidden; }
+  a { color: #eceae4; } a:hover { color: #fff; }
+  three-d-stage:not(:defined) { visibility: hidden; }
+  .hud { position: fixed; top: 18px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; pointer-events: none; z-index: 2; }
+  .title { font: 700 30px/1 "Cormorant SC", serif; letter-spacing: .08em; }
+  .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; pointer-events: auto; padding: 0 12px; }
+  .tab { appearance: none; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.04); color: #eceae4; border-radius: 999px; padding: 7px 14px 7px 9px; font: 500 13px/1.1 "Helvetica Neue", Helvetica, sans-serif; cursor: pointer; }
+  .tab:hover { background: rgba(255,255,255,.1); }
+  .tab[aria-pressed="true"] { background: #eceae4; color: #16171b; border-color: #eceae4; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,.35); }
+  .sub { font: 400 12px/1 "Helvetica Neue", Helvetica, sans-serif; opacity: .6; }
+</style>
+</head>
+<body>
+<div class="hud">
+  <div class="title">Spiral Set</div>
+  <div class="tabs" id="tabs"></div>
+  <div class="sub" id="sub"></div>
+</div>
+<three-d-stage name="spiral_set_lana" background="#16171b"></three-d-stage>
+<script src="three-d-stage.js"></script>
+<script type="module">
+const stage = document.querySelector('three-d-stage');
+const { THREE } = await stage.ready;
+await document.fonts.load('700 64px "Cormorant SC"').catch(() => {});
+
+/* ---------- characters ---------- */
+const SETS = [
+  { id: 'lana', name: 'Lana', sym: 'dragon', desc: 'Electric blue · dragon',
+    body: '#1454e8', body2: '#2a86ff', swirl: '#9fe4ff', ink: '#eefaff', edge: '#0a1f66', glow: '#38c8ff',
+    rough: 0.22, dot: '#1f6bff' },
+  { id: 'anaria', name: 'Anaria', sym: 'crystal', desc: 'Radiant purple · arcane sigil',
+    body: '#6a1fc9', body2: '#b04dff', swirl: '#e3b8ff', ink: '#f6ecff', edge: '#2a0a55', glow: '#ff2238',
+    rough: 0.2, dot: '#8a2be2' },
+  { id: 'ebdal', name: 'Ebdal', sym: 'axes', desc: 'Fighter · sunfire · crossed axes',
+    body: '#d4380f', body2: '#ff8a1c', swirl: '#ffd27a', ink: '#fff1c9', edge: '#5a1204',
+    rough: 0.28, dot: '#e8531a' },
+  { id: 'wroan', name: 'Wroan', sym: 'shield', desc: 'Paladin · black & white · shield',
+    body: '#0e0e10', body2: '#26262a', swirl: '#f4f4f0', ink: '#f7f7f3', edge: '#000000',
+    rough: 0.3, dot: 'linear-gradient(90deg,#0e0e10 50%,#f4f4f0 50%)' },
+  { id: 'kairon', name: 'Kairon', sym: 'waves', desc: 'Druid · tidewater · waves',
+    body: '#0b6f9c', body2: '#19b3c9', swirl: '#bff4ff', ink: '#effdff', edge: '#03324a', glow: '#5fe3ff',
+    rough: 0.18, dot: '#1497c0' },
+];
+
+/* ---------- polyhedra (ported from sargas-dice-set src/engine/polyhedra.js) ---------- */
+const PHI = (1 + Math.sqrt(5)) / 2;
+const v3 = {
+  add: (a, b) => [a[0]+b[0], a[1]+b[1], a[2]+b[2]], sub: (a, b) => [a[0]-b[0], a[1]-b[1], a[2]-b[2]],
+  scale: (a, s) => [a[0]*s, a[1]*s, a[2]*s], dot: (a, b) => a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+  cross: (a, b) => [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]],
+  len: a => Math.hypot(...a), norm: a => { const l = Math.hypot(...a) || 1; return [a[0]/l, a[1]/l, a[2]/l]; },
+  lerp: (a, b, t) => [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t],
+  near: (a, b, e = 1e-4) => Math.abs(a[0]-b[0]) < e && Math.abs(a[1]-b[1]) < e && Math.abs(a[2]-b[2]) < e,
+};
+const signs = n => { const o = []; for (let i = 0; i < 1 << n; i++) o.push(Array.from({ length: n }, (_, k) => (i >> k) & 1 ? -1 : 1)); return o; };
+const VERTS = {
+  4: () => [[1,1,1],[1,-1,-1],[-1,1,-1],[-1,-1,1]],
+  6: () => signs(3),
+  8: () => [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]],
+  10: () => { const c = Math.cos(Math.PI/5), e = (1-c)/(1+c), v = [[0,1,0],[0,-1,0]];
+    for (let k = 0; k < 10; k++) { const a = k*Math.PI/5; v.push([Math.cos(a), k%2 ? -e : e, Math.sin(a)]); } return v; },
+  12: () => { const v = signs(3), ip = 1/PHI; for (const [a,b] of signs(2)) { v.push([0,a*ip,b*PHI],[a*ip,b*PHI,0],[a*PHI,0,b*ip]); } return v; },
+  20: () => { const v = []; for (const [a,b] of signs(2)) v.push([0,a,b*PHI],[a,b*PHI,0],[a*PHI,0,b]); return v; },
+};
+const MM = 0.0125; // world units → metres (d20 ≈ 22 mm across)
+const RADIUS = { 4: 0.95, 6: 0.8, 8: 0.85, 10: 0.82, 12: 0.85, 20: 0.88 };
+
+function hullFaces(verts) {
+  const planes = [];
+  for (let i = 0; i < verts.length; i++) for (let j = i+1; j < verts.length; j++) for (let k = j+1; k < verts.length; k++) {
+    let n = v3.cross(v3.sub(verts[j], verts[i]), v3.sub(verts[k], verts[i]));
+    if (v3.len(n) < 1e-9) continue;
+    n = v3.norm(n); let d = v3.dot(n, verts[i]); let pos = 0, neg = 0;
+    for (const v of verts) { const s = v3.dot(n, v) - d; if (s > 1e-7) pos++; else if (s < -1e-7) neg++; }
+    if (pos && neg) continue;
+    if (pos) { n = v3.scale(n, -1); d = -d; }
+    if (planes.some(p => v3.near(p.n, n) && Math.abs(p.d - d) < 1e-6)) continue;
+    planes.push({ n, d });
+  }
+  return planes.map(({ n, d }) => {
+    const idx = verts.map((_, i) => i).filter(i => Math.abs(v3.dot(n, verts[i]) - d) < 1e-7);
+    const c = v3.scale(idx.reduce((a, i) => v3.add(a, verts[i]), [0,0,0]), 1/idx.length);
+    const r1 = v3.norm(v3.sub(verts[idx[0]], c)), r2 = v3.cross(n, r1);
+    idx.sort((a, b) => { const pa = v3.sub(verts[a], c), pb = v3.sub(verts[b], c);
+      return Math.atan2(v3.dot(pa, r2), v3.dot(pa, r1)) - Math.atan2(v3.dot(pb, r2), v3.dot(pb, r1)); });
+    return { verts: idx, normal: n, center: c };
+  });
+}
+function assignValues(faces) {
+  const n = faces.length;
+  const order = faces.map((_, i) => i).sort((i, j) => { const a = faces[i].normal, b = faces[j].normal;
+    if (Math.abs(a[1]-b[1]) > 1e-3) return b[1]-a[1]; return Math.atan2(a[2], a[0]) - Math.atan2(b[2], b[0]); });
+  let next = 1;
+  for (const i of order) {
+    if (faces[i].value) continue;
+    faces[i].value = next;
+    const opp = faces.findIndex(f => v3.near(f.normal, v3.scale(faces[i].normal, -1), 1e-3));
+    if (opp >= 0 && !faces[opp].value) faces[opp].value = n + 1 - next;
+    next++; while (faces.some(f => f.value === next)) next++;
+  }
+}
+const polyCache = {};
+function getPoly(kind) {
+  if (polyCache[kind]) return polyCache[kind];
+  const raw = VERTS[kind](), maxR = Math.max(...raw.map(v3.len));
+  const vertices = raw.map(v => v3.scale(v, RADIUS[kind] * MM / maxR));
+  const faces = hullFaces(vertices);
+  if (kind === 4) faces.forEach((f, i) => f.value = i + 1); else assignValues(faces);
+  for (const f of faces) {
+    const c = f.center; let up;
+    if (kind === 6) up = v3.norm(v3.sub(v3.lerp(vertices[f.verts[0]], vertices[f.verts[1]], .5), c));
+    else if (kind === 10) { const p = f.verts.reduce((b, i) => Math.abs(vertices[i][1]) > Math.abs(vertices[b][1]) ? i : b); up = v3.norm(v3.sub(vertices[p], c)); }
+    else up = v3.norm(v3.sub(vertices[f.verts[0]], c));
+    f.up = up; f.right = v3.cross(up, f.normal);
+    f.pts = f.verts.map(vi => { const d = v3.sub(vertices[vi], c); return [v3.dot(d, f.right), v3.dot(d, up)]; });
+  }
+  return (polyCache[kind] = { kind, vertices, faces, vertexValues: kind === 4 ? vertices.map((_, i) => i + 1) : null });
+}
+
+/* ---------- atlas layout ---------- */
+const CELL = 192;
+function layoutFor(poly) {
+  const n = poly.faces.length + 1, cols = Math.ceil(Math.sqrt(n)), rows = Math.ceil(n / cols);
+  const ext = Math.max(...poly.faces.flatMap(f => f.pts.map(p => Math.hypot(p[0], p[1]))));
+  const toUV = (cell, x, y) => {
+    const col = cell % cols, row = Math.floor(cell / cols);
+    const u = (col + 0.5 + x / ext * 0.47) / cols, py = (row + 0.5 - y / ext * 0.47) / rows;
+    return [u, 1 - py];
+  };
+  const toPx = (cell, x, y) => { const [u, v] = toUV(cell, x, y); return [u * cols * CELL, (1 - v) * rows * CELL]; };
+  return { cols, rows, ext, bodyCell: n - 1, toUV, toPx, W: cols * CELL, H: rows * CELL };
+}
+
+/* ---------- chamfered geometry (ported from src/engine/geometry.js) ---------- */
+const geoCache = {};
+function getGeometry(poly, L) {
+  if (geoCache[poly.kind]) return geoCache[poly.kind];
+  const k = poly.kind === 4 ? 0.84 : 0.88;
+  const pos = [], nor = [], uv = [];
+  const shrunk = poly.faces.map(f => { const m = new Map(); for (const vi of f.verts) m.set(vi, v3.lerp(f.center, poly.vertices[vi], k)); return m; });
+  const bodyUV = L.toUV(L.bodyCell, 0, 0);
+  const push = v => { pos.push(...v.p); nor.push(...v.n); uv.push(...v.uv); };
+  const tri = (a, b, c) => { const n = v3.cross(v3.sub(b.p, a.p), v3.sub(c.p, a.p));
+    const mid = v3.scale(v3.add(v3.add(a.p, b.p), c.p), 1/3); if (v3.dot(n, mid) < 0) [b, c] = [c, b]; push(a); push(b); push(c); };
+  poly.faces.forEach((f, fi) => {
+    const centre = { p: f.center, n: f.normal, uv: L.toUV(fi, 0, 0) };
+    const ring = f.verts.map((vi, j) => ({ p: shrunk[fi].get(vi), n: f.normal, uv: L.toUV(fi, f.pts[j][0]*k, f.pts[j][1]*k) }));
+    for (let j = 0; j < ring.length; j++) tri(centre, ring[j], ring[(j+1) % ring.length]);
+  });
+  const faceVerts = pos.length / 3;
+  const seen = new Set();
+  poly.faces.forEach((f, fi) => f.verts.forEach((a, j) => {
+    const b = f.verts[(j+1) % f.verts.length], key = a < b ? a+'-'+b : b+'-'+a;
+    if (seen.has(key)) return; seen.add(key);
+    const gi = poly.faces.findIndex((g, i) => i !== fi && g.verts.includes(a) && g.verts.includes(b)), g = poly.faces[gi];
+    const mk = (face, idx, vi) => ({ p: shrunk[idx].get(vi), n: face.normal, uv: bodyUV });
+    const fa = mk(f, fi, a), fb = mk(f, fi, b), ga = mk(g, gi, a), gb = mk(g, gi, b);
+    tri(fa, fb, gb); tri(fa, gb, ga);
+  }));
+  poly.vertices.forEach((v, vi) => {
+    const axis = v3.norm(v);
+    const around = poly.faces.map((f, fi) => f.verts.includes(vi) ? { p: shrunk[fi].get(vi), n: f.normal, uv: bodyUV } : null).filter(Boolean);
+    const r1 = v3.norm(v3.sub(around[0].p, v3.scale(axis, v3.dot(around[0].p, axis)))), r2 = v3.cross(axis, r1);
+    const ang = p => Math.atan2(v3.dot(p, r2), v3.dot(p, r1));
+    around.sort((a, b) => ang(a.p) - ang(b.p));
+    const c = { p: v3.scale(around.reduce((s, x) => v3.add(s, x.p), [0,0,0]), 1/around.length), n: axis, uv: bodyUV };
+    for (let j = 0; j < around.length; j++) tri(c, around[j], around[(j+1) % around.length]);
+  });
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.addGroup(0, faceVerts, 0); g.addGroup(faceVerts, pos.length / 3 - faceVerts, 1);
+  g.computeBoundingSphere();
+  return (geoCache[poly.kind] = g);
+}
+
+/* ---------- dragon mark: user-supplied silhouette, luminance → alpha, tinted per set ---------- */
+const dragonImg = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = 'assets/dragon-mark.png'; });
+const dragonMask = (() => {
+  const S = 512, c = document.createElement('canvas'); c.width = c.height = S; const x = c.getContext('2d');
+  const k = dragonImg.naturalWidth / 980; // crop tuned to the 980px source
+  x.fillStyle = '#fff'; x.fillRect(0, 0, S, S);
+  x.drawImage(dragonImg, 195 * k, 195 * k, 590 * k, 590 * k, 0, 0, S, S);
+  const d = x.getImageData(0, 0, S, S);
+  for (let i = 0; i < d.data.length; i += 4) { const a = 255 - (d.data[i] + d.data[i+1] + d.data[i+2]) / 3; d.data[i] = d.data[i+1] = d.data[i+2] = 255; d.data[i+3] = a < 40 ? 0 : a; }
+  x.putImageData(d, 0, 0); return c;
+})();
+const tintCache = {};
+function tinted(color) {
+  if (tintCache[color]) return tintCache[color];
+  const c = document.createElement('canvas'); c.width = c.height = dragonMask.width; const x = c.getContext('2d');
+  x.drawImage(dragonMask, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = color; x.fillRect(0, 0, c.width, c.height);
+  return (tintCache[color] = c);
+}
+
+/* ---------- symbols (drawn in a unit box, radius 1) ---------- */
+function symbolPath(ctx, sym) {
+  const p = new Path2D();
+  if (sym === 'dragon') {
+    p.moveTo(-.72,.95); p.bezierCurveTo(-.86,.3,-.74,-.12,-.5,-.3);
+    p.quadraticCurveTo(-.82,-.6,-1,-1); p.quadraticCurveTo(-.55,-.72,-.34,-.44);
+    p.quadraticCurveTo(-.34,-.8,-.18,-1.02); p.quadraticCurveTo(-.08,-.7,-.1,-.48);
+    p.lineTo(.14,-.5); p.lineTo(.28,-.68); p.lineTo(.36,-.44);
+    p.quadraticCurveTo(.7,-.4,.92,-.3); p.lineTo(1,-.18); p.lineTo(.93,-.08);
+    p.lineTo(.85,-.08); p.lineTo(.8,.06); p.lineTo(.73,-.06); p.lineTo(.6,-.04); p.lineTo(.55,.08); p.lineTo(.49,-.02);
+    p.lineTo(.1,.06);
+    p.lineTo(.42,.22); p.lineTo(.48,.1); p.lineTo(.55,.24); p.lineTo(.68,.28); p.lineTo(.73,.15); p.lineTo(.82,.32);
+    p.quadraticCurveTo(.72,.46,.4,.46); p.lineTo(.12,.47); p.lineTo(.06,.66); p.lineTo(-.06,.52);
+    p.bezierCurveTo(-.2,.64,-.26,.8,-.2,.95); p.closePath();
+    // neck spines
+    [[-.78,.55],[-.8,.2],[-.68,-.12]].forEach(([x, y]) => { p.moveTo(x, y); p.lineTo(x - .22, y - .08); p.lineTo(x + .02, y - .2); p.closePath(); });
+  } else if (sym === 'crystal') {
+    p.moveTo(0,-1); p.quadraticCurveTo(.3,-.52,.44,-.08); p.quadraticCurveTo(.3,.42,0,.96);
+    p.quadraticCurveTo(-.3,.42,-.44,-.08); p.quadraticCurveTo(-.3,-.52,0,-1); p.closePath();
+  } else if (sym === 'shield') {
+    p.moveTo(-.74,-.84); p.quadraticCurveTo(0,-.66,.74,-.84); p.lineTo(.74,-.1);
+    p.bezierCurveTo(.74,.46,.36,.76,0,.98); p.bezierCurveTo(-.36,.76,-.74,.46,-.74,-.1); p.closePath();
+  }
+  return p;
+}
+function drawAxe(ctx, flip) {
+  ctx.save(); ctx.scale(flip ? -1 : 1, 1);
+  ctx.fillRect(-.055, -.92, .11, 1.9);
+  const b = new Path2D();
+  b.moveTo(.03,-.88); b.bezierCurveTo(.5,-1.02,.72,-.66,.66,-.2); b.bezierCurveTo(.5,-.34,.28,-.4,.03,-.38); b.closePath();
+  ctx.fill(b);
+  const s = new Path2D(); s.moveTo(-.03,-.78); s.lineTo(-.3,-.7); s.lineTo(-.03,-.5); s.closePath(); ctx.fill(s);
+  ctx.restore();
+}
+function drawSymbol(ctx, set, x, y, r, rot, glowCtx) {
+  const paint = (c, glow) => {
+    c.save(); c.translate(x, y); c.rotate(rot); c.scale(r, r);
+    c.lineJoin = 'round'; c.lineCap = 'round';
+    const outline = () => { c.strokeStyle = set.edge; c.lineWidth = .1; };
+    if (set.sym === 'dragon') {
+      if (!glow) { const o = .06; for (const [dx, dy] of [[o,0],[-o,0],[0,o],[0,-o],[o,o],[-o,-o],[o,-o],[-o,o]]) c.drawImage(tinted(set.edge), -1.2 + dx, -1.2 + dy, 2.4, 2.4); }
+      c.drawImage(tinted(glow ? set.glow : set.ink), -1.2, -1.2, 2.4, 2.4);
+    } else if (set.sym === 'crystal') {
+      // Arcane sigil: ringed triangle, three gem nodes, arrows, eye.
+      const ring = (r, n, dash) => { c.beginPath(); c.arc(0, 0, r, 0, Math.PI * 2); if (dash) c.setLineDash(dash); c.stroke(); c.setLineDash([]); };
+      const diamond = (x, y, s) => { c.beginPath(); c.moveTo(x, y - s); c.lineTo(x + s * .7, y); c.lineTo(x, y + s); c.lineTo(x - s * .7, y); c.closePath(); };
+      const T = [[0, -.78], [.68, .39], [-.68, .39]], C0 = [0, .06];
+      const nodes = T.map(([x, y]) => [x * .42, y * .42 + .03]);
+      const draw = (col, w) => {
+        c.strokeStyle = col; c.fillStyle = col; c.lineWidth = w;
+        c.beginPath(); T.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.closePath(); c.stroke();
+        nodes.forEach(([x, y], i) => {
+          const [tx, ty] = T[i];
+          c.beginPath(); c.moveTo(0, .06); c.lineTo(tx * .82, ty * .82 + .02); c.stroke();
+          const a = Math.atan2(ty * .82 - .04, tx * .82), hx = tx * .82, hy = ty * .82 + .02;
+          c.beginPath(); c.moveTo(hx, hy); c.lineTo(hx - Math.cos(a - .4) * .14, hy - Math.sin(a - .4) * .14); c.lineTo(hx - Math.cos(a + .4) * .14, hy - Math.sin(a + .4) * .14); c.closePath(); c.fill();
+          c.beginPath(); c.arc(x, y, .17, 0, Math.PI * 2); c.stroke();
+        });
+        c.beginPath(); c.arc(0, .06, .08, 0, Math.PI * 2); c.fill();
+      };
+      if (glow) {
+        c.fillStyle = set.glow;
+        c.save(); c.scale(1.3, 1.3); c.translate(0, .08); nodes.forEach(([x, y]) => { diamond(x, y, .12); c.fill(); }); c.restore();
+      } else {
+        c.save(); c.scale(1.3, 1.3); c.translate(0, .08); draw(set.edge, .17); draw(set.ink, .085);
+        c.fillStyle = set.edge; nodes.forEach(([x, y]) => { diamond(x, y, .15); c.fill(); });
+        c.fillStyle = '#ff2a3f'; c.shadowColor = '#ff2238'; c.shadowBlur = 6;
+        nodes.forEach(([x, y]) => { diamond(x, y, .12); c.fill(); }); c.shadowBlur = 0; c.restore();
+      }
+    } else if (set.sym === 'axes') {
+      if (glow) { c.restore(); return; }
+      [[.72, false], [-.72, true]].forEach(([a, f]) => {
+        c.save(); c.rotate(a);
+        c.fillStyle = set.edge; c.save(); c.scale(1.08, 1.04); drawAxe(c, f); c.restore();
+        c.fillStyle = set.ink; drawAxe(c, f); c.restore();
+      });
+    } else if (set.sym === 'shield') {
+      if (glow) { c.restore(); return; }
+      const p = symbolPath(c, 'shield');
+      c.fillStyle = set.ink; c.fill(p);
+      c.save(); c.scale(.8, .8); c.translate(0, -.02); c.strokeStyle = set.body; c.lineWidth = .08; c.stroke(p); c.restore();
+      c.fillStyle = set.body; c.fillRect(-.09,-.55,.18,1.18); c.fillRect(-.45,-.25,.9,.18);
+    } else if (set.sym === 'waves') {
+      c.strokeStyle = glow ? set.glow : set.ink; c.lineWidth = .16;
+      if (glow) c.lineWidth = .1;
+      for (let i = 0; i < 3; i++) {
+        const yy = -.5 + i * .48;
+        c.beginPath(); c.moveTo(-.9, yy + .1);
+        c.bezierCurveTo(-.6, yy - .28, -.3, yy + .38, 0, yy + .02);
+        c.bezierCurveTo(.3, yy - .34, .6, yy + .32, .9, yy - .06);
+        c.stroke();
+      }
+    }
+    c.restore();
+  };
+  paint(ctx, false);
+  if (glowCtx && set.glow) paint(glowCtx, true);
+}
+
+/* ---------- painting ---------- */
+function rng(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
+function paintBody(ctx, W, H, set, seed) {
+  const g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, set.body); g.addColorStop(.5, set.body2); g.addColorStop(1, set.body);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const r = rng(seed);
+  ctx.lineCap = 'round';
+  for (let s = 0; s < Math.ceil(W * H / 20000); s++) { // faint log-spiral streaks — the "Spiral" in Spiral Set
+    const cx = r() * W, cy = r() * H, a0 = r() * Math.PI * 2, dir = r() < .5 ? 1 : -1, size = 20 + r() * 70;
+    ctx.strokeStyle = set.swirl; ctx.globalAlpha = set.id === 'wroan' ? .16 + r() * .2 : .07 + r() * .1;
+    ctx.lineWidth = .6 + r() * 2.4; ctx.beginPath();
+    for (let t = 0; t < 14; t += .12) { const rad = size * Math.exp(-.18 * t), a = a0 + dir * t;
+      const x = cx + Math.cos(a) * rad, y = cy + Math.sin(a) * rad; t ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}
+function text(ctx, set, s, x, y, px, rot, dotted) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+  ctx.font = `700 ${px}px "Cormorant SC", serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.lineJoin = 'round'; ctx.strokeStyle = set.edge; ctx.lineWidth = px * .1; ctx.strokeText(s, 0, px * .04);
+  ctx.fillStyle = set.ink; ctx.fillText(s, 0, px * .04);
+  if (dotted) { ctx.beginPath(); ctx.arc(0, px * .52, px * .06, 0, Math.PI * 2); ctx.fill(); }
+  ctx.restore();
+}
+const SIZE = { 4: .2, 6: .46, 8: .3, 10: .3, 100: .22, 12: .34, 20: .27 };
+function label(kind, v) {
+  if (kind === 10) return String(v % 10);
+  if (kind === 100) return String((v % 10) * 10).padStart(2, '0');
+  return String(v);
+}
+function paintAtlas(set, kind, poly, L) {
+  const mk = () => { const c = document.createElement('canvas'); c.width = L.W; c.height = L.H; return c; };
+  const color = mk(), cx = color.getContext('2d');
+  paintBody(cx, L.W, L.H, set, kind * 97 + set.id.length * 13);
+  let glow = null, gx = null;
+  if (set.glow) { glow = mk(); gx = glow.getContext('2d'); gx.fillStyle = '#000'; gx.fillRect(0, 0, L.W, L.H); }
+  const bodyOnly = cx.getImageData(0, 0, L.W, L.H).data;
+  const max = kind === 100 ? 10 : kind, px = CELL * SIZE[kind];
+  poly.faces.forEach((f, fi) => {
+    const [ox, oy] = L.toPx(fi, 0, 0);
+    if (kind === 4) {
+      f.verts.forEach((vi, j) => {
+        const [vx, vy] = L.toPx(fi, f.pts[j][0], f.pts[j][1]);
+        const dx = vx - ox, dy = vy - oy, rot = Math.atan2(dx, -dy);
+        const x = ox + dx * .56, y = oy + dy * .56, v = poly.vertexValues[vi];
+        if (v === 4) drawSymbol(cx, set, x, y, px * .55, rot, gx); else text(cx, set, String(v), x, y, px, rot);
+      });
+      return;
+    }
+    if (f.value === max) { drawSymbol(cx, set, ox, oy, px * (kind === 6 ? .55 : kind === 100 ? .7 : .6), 0, gx); return; }
+    const s = label(kind, f.value);
+    const dotted = (s === '6' || s === '9') && kind !== 6 && kind !== 8;
+    const shift = kind === 10 || kind === 100 ? -px * .12 : 0;
+    text(cx, set, s, ox, oy + shift, px, 0, dotted);
+  });
+  // Alpha mask: glass body see-through, painted ink stays solid.
+  const bodyAlpha = set.id === 'wroan' ? 200 : 125;
+  const mask = mk(), mx = mask.getContext('2d'), img = cx.getImageData(0, 0, L.W, L.H), out = mx.createImageData(L.W, L.H);
+  for (let i = 0; i < img.data.length; i += 4) {
+    const d = Math.abs(img.data[i] - bodyOnly[i]) + Math.abs(img.data[i+1] - bodyOnly[i+1]) + Math.abs(img.data[i+2] - bodyOnly[i+2]);
+    const t = d > 24 ? 255 : bodyAlpha;
+    out.data[i] = out.data[i+1] = out.data[i+2] = t; out.data[i+3] = 255;
+  }
+  mx.putImageData(out, 0, 0);
+  const bump = mk(), bx = bump.getContext('2d'), bo = bx.createImageData(L.W, L.H);
+  for (let i = 0; i < img.data.length; i += 4) { const ink = out.data[i] === 255; bo.data[i] = bo.data[i+1] = bo.data[i+2] = ink ? 0 : 255; bo.data[i+3] = 255; }
+  bx.putImageData(bo, 0, 0); bx.filter = 'blur(1px)'; bx.drawImage(bump, 0, 0);
+  // darken ink slightly so the engraving reads as cut into the glass
+  cx.save(); cx.globalCompositeOperation = 'multiply'; cx.globalAlpha = .18; cx.fillStyle = '#000'; cx.drawImage(bump, 0, 0); cx.restore();
+  return { color, glow, mask, bump };
+}
+
+/* ---------- dice ---------- */
+const SILVER = new THREE.MeshPhysicalMaterial({ name: 'silver_inlay', color: '#dfe3e8', metalness: 1, roughness: 0.22, clearcoat: .4, envMapIntensity: 1.4 });
+const KINDS = [4, 6, 8, 20, 10, 100, 12];
+function buildDie(set, kind) {
+  const pk = kind === 100 ? 10 : kind, poly = getPoly(pk), L = layoutFor(poly), geo = getGeometry(poly, L);
+  const { color, glow, mask, bump } = paintAtlas(set, kind, poly, L);
+  const tex = (c, srgb) => { const t = new THREE.CanvasTexture(c); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };
+  const mat = new THREE.MeshPhysicalMaterial({
+    name: `${set.id}_d${kind}_metal`, map: tex(color, true), roughness: 0.3, metalness: 1, metalnessMap: tex(bump, false),
+    bumpMap: tex(bump, false), bumpScale: 3,
+    clearcoat: 0.5, clearcoatRoughness: 0.15, envMapIntensity: 1.3,
+  });
+  if (glow) { mat.emissive = new THREE.Color('#ffffff'); mat.emissiveMap = tex(glow, true); mat.emissiveIntensity = 1.4; }
+  const mesh = new THREE.Mesh(geo, [mat, SILVER]);
+  mesh.name = `${set.id}_d${kind}`;
+  // Orient: highest value (symbol) up, reading upright from the front.
+  const V = a => new THREE.Vector3(...a);
+  let topDir, readUp;
+  const maxV = kind === 100 ? 10 : kind;
+  if (pk === 4) {
+    const vi = poly.vertexValues.indexOf(4), f = poly.faces.find(f => f.verts.includes(vi));
+    topDir = V(v3.norm(poly.vertices[vi])); readUp = V(f.normal).multiplyScalar(-1);
+  } else {
+    const f = poly.faces.find(f => f.value === maxV); topDir = V(f.normal); readUp = V(f.up);
+  }
+  const q = new THREE.Quaternion().setFromUnitVectors(topDir, new THREE.Vector3(0, 1, 0));
+  const h = readUp.applyQuaternion(q); h.y = 0;
+  if (h.lengthSq() > 1e-8) {
+    h.normalize(); const ang = Math.atan2(h.x, h.z) - Math.atan2(0, -1);
+    q.premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -ang));
+  }
+  mesh.quaternion.copy(q);
+  const holder = new THREE.Group(); holder.name = `${set.id}_d${kind}_holder`; holder.add(mesh);
+  holder.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(mesh); mesh.position.y = -box.min.y;
+  return holder;
+}
+function buildSet(set, z = 0) {
+  const g = new THREE.Group(); g.name = `spiral_${set.id}`;
+  const P = { 4: [-.045, -.02], 6: [-.015, -.024], 8: [.015, -.024], 12: [.046, -.02], 10: [-.031, .012], 20: [0, .016], 100: [.031, .012] };
+  KINDS.forEach(k => { const d = buildDie(set, k); d.position.set(P[k][0], 0, z + P[k][1]); g.add(d); });
+  return g;
+}
+
+/* ---------- studio environment so glass has something to refract/reflect ---------- */
+{
+  const env = new THREE.Scene();
+  env.background = new THREE.Color('#2a2c33');
+  const panel = (w, h, pos, look, c, i) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(c).multiplyScalar(i), side: THREE.DoubleSide }));
+    m.position.set(...pos); m.lookAt(...look); env.add(m); };
+  panel(6, 3, [0, 5, 0], [0, 0, 0], '#ffffff', 3);
+  panel(3, 4, [5, 1.5, 2], [0, 0, 0], '#fff4e6', 2.2);
+  panel(3, 4, [-5, 1.5, -1], [0, 0, 0], '#e6f0ff', 1.4);
+  panel(8, 1, [0, 0.5, -5], [0, 0, 0], '#ffffff', 0.8);
+  const pmrem = new THREE.PMREMGenerator(stage._renderer);
+  stage._scene.environment = pmrem.fromScene(env, 0.03).texture;
+}
+
+/* ---------- UI ---------- */
+const cache = {};
+const tabs = document.getElementById('tabs'), sub = document.getElementById('sub');
+const OPTIONS = [...SETS, { id: 'all', name: 'Full set', desc: 'All five characters · 35 dice', dot: 'conic-gradient(#1f6bff,#8a2be2,#e8531a,#f4f4f0,#1497c0,#1f6bff)' }];
+function show(id) {
+  const opt = OPTIONS.find(o => o.id === id) || OPTIONS[0];
+  localStorage.setItem('spiral-set-view', opt.id);
+  [...tabs.children].forEach(b => b.setAttribute('aria-pressed', b.dataset.id === opt.id));
+  sub.textContent = opt.desc;
+  stage.setAttribute('name', 'spiral_set_' + opt.id);
+  if (!cache[opt.id]) {
+    if (opt.id === 'all') { const g = new THREE.Group(); g.name = 'spiral_set';
+      SETS.forEach((s, i) => { const sg = buildSet(s); sg.position.set(i < 3 ? (i - 1) * 0.12 : (i - 3.5) * 0.12, 0, i < 3 ? -0.045 : 0.045); g.add(sg); }); cache.all = g; }
+    else cache[opt.id] = buildSet(opt);
+  }
+  stage.setObject(cache[opt.id]);
+}
+OPTIONS.forEach(o => {
+  const b = document.createElement('button'); b.className = 'tab'; b.dataset.id = o.id;
+  b.innerHTML = `<span class="dot" style="background:${o.dot}"></span>${o.name}`;
+  b.onclick = () => show(o.id); tabs.appendChild(b);
+});
+show(localStorage.getItem('spiral-set-view') || 'lana');
+</script>
+</body>
+</html>

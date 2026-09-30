@@ -2,7 +2,7 @@
  * Stand-alone preview page (no Foundry needed). Used for development and for
  * the screenshot checks in tools/screenshots.mjs.
  *   demo/index.html?mode=gallery            every style as a d6 (&styles=a,b to filter, &size=px)
- *   demo/index.html?mode=kinds&style=<id>   one style on every die kind
+ *   demo/index.html?mode=kinds&style=<id>   one style on every die kind (&top=1 turns each die's highest value to the camera)
  *   demo/index.html?mode=faces              design SVG vs painted texture for styles with face artwork
  *   demo/index.html?mode=roll&style=<id>&dice=2d6,1d20,1dF,1dc&seed=1   (&hidden=1, &fit=0, &quality=low)
  * After a roll settles, window.rollResult = {expected, shown} holds the requested and rendered values.
@@ -11,13 +11,14 @@ import { DiceBox } from "./engine/dice-box.js";
 import { renderDie } from "./engine/thumbnail.js";
 import { registerBuiltinStyles, getStyles, getStyle } from "./styles/index.js";
 import { expandDice } from "./foundry/roll-parser.js";
-import { preloadStyles } from "./engine/textures/face-images.js";
+import { preloadStyles, faceImagesReady } from "./engine/textures/face-images.js";
 import { setAssetBase } from "./engine/assets.js";
 
 setAssetBase("../");
 registerBuiltinStyles();
-// Styles with SVG face artwork (Oracle) load it before anything is drawn.
+// Styles with SVG face artwork (Oracle) or image files (Spiral Set) load them before anything is drawn.
 await preloadStyles(getStyles());
+window.assetsReady = getStyles().every(faceImagesReady);
 const params = new URLSearchParams(location.search);
 const mode = params.get("mode") ?? "gallery";
 const root = document.getElementById("root");
@@ -40,13 +41,24 @@ if (mode === "gallery") {
   for (const s of getStyles()) if (!only || only.includes(s.id)) tile(renderDie(s, { size, quality: "high" }), s.name);
 } else if (mode === "kinds") {
   const style = getStyle(params.get("style")) ?? getStyles()[0];
-  const rotation = [0.35, -0.5, 0.1];
-  for (const kind of [4, 6, 8, 10, 12, 20]) tile(renderDie(style, { kind, size: 220, quality: "high", rotation }), `${style.name} d${kind}`);
-  tile(renderDie(style, { kind: 10, size: 220, quality: "high", variant: "tens", rotation }), `${style.name} d100 tens`);
-  tile(renderDie(style, { kind: 6, size: 220, quality: "high", variant: "fate", rotation }), `${style.name} dF`);
-  tile(renderDie(style, { kind: 6, size: 220, quality: "high", variant: "d3", rotation }), `${style.name} d3`);
+  let rotation = [0.35, -0.5, 0.1];
+  if (params.get("top") === "1") {
+    // Turn the die so its highest value (the face that carries a style's symbol) faces the preview camera.
+    const { getPolyhedron, valueDirection } = await import("./engine/polyhedra.js");
+    const { Quaternion, Euler, Vector3 } = await import("three");
+    rotation = kind => {
+      const poly = getPolyhedron(kind);
+      const q = new Quaternion().setFromUnitVectors(new Vector3(...valueDirection(poly, kind)), new Vector3(0, 2.3, 3.3).normalize());
+      return new Euler().setFromQuaternion(q).toArray().slice(0, 3);
+    };
+  }
+  const rot = kind => (typeof rotation === "function" ? rotation(kind) : rotation);
+  for (const kind of [4, 6, 8, 10, 12, 20]) tile(renderDie(style, { kind, size: 220, quality: "high", rotation: rot(kind) }), `${style.name} d${kind}`);
+  tile(renderDie(style, { kind: 10, size: 220, quality: "high", variant: "tens", rotation: rot(10) }), `${style.name} d100 tens`);
+  tile(renderDie(style, { kind: 6, size: 220, quality: "high", variant: "fate", rotation: rot(6) }), `${style.name} dF`);
+  tile(renderDie(style, { kind: 6, size: 220, quality: "high", variant: "d3", rotation: rot(6) }), `${style.name} d3`);
   tile(renderDie(style, { kind: 2, size: 220, quality: "high", variant: "coin", rotation: [0.9, 0, 0.1] }), `${style.name} coin`);
-  tile(renderDie(style, { kind: 20, size: 220, quality: "high", variant: "hidden", rotation }), `${style.name} hidden`);
+  tile(renderDie(style, { kind: 20, size: 220, quality: "high", variant: "hidden", rotation: rot(20) }), `${style.name} hidden`);
 } else if (mode === "faces") {
   // Face artwork check: the design's SVG next to the d6 colour texture the engine paints.
   const { getPolyhedron } = await import("./engine/polyhedra.js");

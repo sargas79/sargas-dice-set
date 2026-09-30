@@ -3,17 +3,19 @@ import fs from "node:fs";
 import { BUILTIN_STYLES, SARGAS_STYLES, COLLECTIONS } from "../src/styles/index.js";
 import { CLASSIC_STYLES } from "../src/styles/classic.js";
 import { ORACLE_STYLES } from "../src/styles/oracle.js";
+import { SPIRAL_STYLES } from "../src/styles/spiral.js";
 import { validateStyle, registerStyle, getStyles } from "../src/styles/registry.js";
 
 const lang = JSON.parse(fs.readFileSync(new URL("../lang/en.json", import.meta.url)));
 
 describe("built-in styles", () => {
-  it("has the 14 Sargas styles, 7 Oracle finishes and 8 Classic sets, with unique ids", () => {
+  it("has the 14 Sargas styles, 7 Oracle finishes, 5 Spiral sets and 8 Classic sets, with unique ids", () => {
     expect(SARGAS_STYLES).toHaveLength(14);
     expect(ORACLE_STYLES).toHaveLength(7);
+    expect(SPIRAL_STYLES).toHaveLength(5);
     expect(CLASSIC_STYLES).toHaveLength(8);
-    expect(BUILTIN_STYLES).toHaveLength(29);
-    expect(new Set(BUILTIN_STYLES.map(s => s.id)).size).toBe(29);
+    expect(BUILTIN_STYLES).toHaveLength(34);
+    expect(new Set(BUILTIN_STYLES.map(s => s.id)).size).toBe(34);
   });
 
   it("builds the Oracle finishes from the design", () => {
@@ -131,5 +133,79 @@ describe("Oracle design artwork", async () => {
 
   it("gives every Oracle style its face artwork", () => {
     for (const s of ORACLE_STYLES) expect(s.faceSvg(4, 128)).toBe(designFaceSvg(s.id.replace("oracle-", ""), 4, 128));
+  });
+});
+
+describe("Spiral Set design", async () => {
+  const design = await import("../src/styles/spiral-design.js");
+
+  it("keeps the design's five character sets verbatim", () => {
+    expect(design.SPIRAL_SETS.map(s => s.name)).toEqual(["Lana", "Anaria", "Ebdal", "Wroan", "Kairon"]);
+    expect(design.SPIRAL_SETS.map(s => s.sym)).toEqual(["dragon", "crystal", "axes", "shield", "waves"]);
+    expect(design.SPIRAL_SETS[0]).toMatchObject({ body: "#1454e8", body2: "#2a86ff", swirl: "#9fe4ff", ink: "#eefaff", edge: "#0a1f66", glow: "#38c8ff" });
+    expect(design.SPIRAL_SETS[3]).toMatchObject({ body: "#0e0e10", body2: "#26262a", swirl: "#f4f4f0", ink: "#f7f7f3", edge: "#000000" });
+    expect(design.SPIRAL_SETS[3].glow).toBeUndefined();
+    expect(design.SIZE).toEqual({ 4: .2, 6: .46, 8: .3, 10: .3, 100: .22, 12: .34, 20: .27 });
+    expect(design.DESIGN_CELL).toBe(192);
+    expect(design.DRAGON_MARK.file).toBe("assets/dragon-mark.png");
+    expect(fs.existsSync(new URL("../assets/dragon-mark.png", import.meta.url))).toBe(true);
+  });
+
+  it("labels faces like the design (d10 shows 0-9, the tens die 00-90)", () => {
+    expect(design.label(10, 7)).toBe("7");
+    expect(design.label(10, 10)).toBe("0");
+    expect(design.label(100, 10)).toBe("00");
+    expect(design.label(100, 6)).toBe("60");
+    expect(design.label(20, 20)).toBe("20");
+    expect(design.atlasSeed(design.SPIRAL_SETS[0], 20)).toBe(20 * 97 + 4 * 13);
+  });
+
+  it("repeats the design's random stream", () => {
+    const a = design.rng(7), b = design.rng(7);
+    const first = [a(), a(), a()];
+    expect([b(), b(), b()]).toEqual(first);
+    for (const v of first) expect(v).toBeGreaterThanOrEqual(0);
+  });
+
+  it("builds one style per set with the design's materials, font and collection", () => {
+    for (const s of SPIRAL_STYLES) {
+      expect(s.collection).toBe("spiral");
+      expect(s.fonts).toEqual([{ family: "Cormorant SC", weight: 700, file: "fonts/CormorantSC-Bold.woff2" }]);
+      expect(s.body).toMatchObject({ roughness: 0.3, metalness: 1, clearcoat: 0.5, clearcoatRoughness: 0.15, envMapIntensity: 1.3 });
+      expect(s.shape).toBeUndefined();
+      expect(typeof s.drawMarks).toBe("function");
+      expect(typeof s.decorateBody).toBe("function");
+    }
+    expect(SPIRAL_STYLES.map(s => s.emissive)).toEqual([true, true, false, false, true]);
+    expect(SPIRAL_STYLES[0].images).toEqual([{ key: "dragon", file: "assets/dragon-mark.png" }]);
+    expect(SPIRAL_STYLES[1].images).toBeUndefined();
+    expect(SPIRAL_STYLES[0].pips.color).toBe("#eefaff");
+  });
+
+  it("draws every numbered face itself, leaving coins and Fate dice to the defaults", () => {
+    // A stand-in 2D context (and Path2D) that accepts any drawing call.
+    const calls = [];
+    globalThis.Path2D ??= class { moveTo() {} lineTo() {} bezierCurveTo() {} quadraticCurveTo() {} closePath() {} };
+    const ctx = new Proxy({}, { get: (t, k) => (k === "createLinearGradient" ? () => ({ addColorStop() {} }) : (...a) => calls.push(k)), set: () => true });
+    const p = { ctx: { color: ctx, emissive: ctx } };
+    const face = (kind, value, variant, extra = {}) => ({ kind, value, variant, cx: 96, cy: 96, cell: { w: 192 }, fullPolygon: [[0, 0], [192, 0], [96, 192]], ...extra });
+    for (const s of SPIRAL_STYLES) {
+      expect(s.drawMarks(p, face(6, 3))).toBe(true);
+      expect(s.drawMarks(p, face(6, 6))).toBe(true);
+      expect(s.drawMarks(p, face(20, 20))).toBe(true);
+      expect(s.drawMarks(p, face(10, 10, "tens"))).toBe(true);
+      expect(s.drawMarks(p, face(20, 3, "hidden"))).toBe(true);
+      expect(s.drawMarks(p, face(6, 5, "d3", { label: "2" }))).toBe(true);
+      expect(s.drawMarks(p, face(4, 1, undefined, { vertexLabels: [{ label: "1" }, { label: "4" }, { label: "3" }] }))).toBe(true);
+      expect(s.drawMarks(p, face(6, 1, "fate"))).toBe(false);
+      expect(s.drawMarks(p, face(2, 1, "coin"))).toBe(false);
+    }
+    expect(calls).toContain("strokeText");
+    expect(calls).toContain("fillText");
+    // Without its image (not loaded, or missing), Lana's dragon faces show their number rather than nothing.
+    calls.length = 0;
+    expect(SPIRAL_STYLES[0].drawMarks(p, face(20, 20))).toBe(true);
+    expect(calls).toContain("fillText");
+    expect(calls).not.toContain("drawImage");
   });
 });
